@@ -363,3 +363,28 @@ If the answer is not in the documents, say so clearly.
                 "answer": "I encountered an error while searching your documents. Please try again.",
                 "sources": [],
             }
+
+    async def summarize_transcript(self, transcript_messages: List[Dict[str, str]], property_context: str) -> str:
+        """Summarize a negotiation transcript into key terms."""
+        transcript_text = "\n".join([f"{msg.get('role', 'unknown').capitalize()}: {msg.get('content', '')}" for msg in transcript_messages])
+        
+        prompt = f"""You are an expert real estate AI. Summarize the key terms agreed upon or discussed in this negotiation transcript for {property_context}.
+        
+Transcript:
+{transcript_text}
+
+Focus strictly on the outcomes:
+1. Final negotiated rent
+2. Security deposit amount/months
+3. Brokerage / fees
+4. Move-in date or timeline
+5. Any special conditions or concessions discussed
+
+Be concise and use a bulleted list. If a term was not discussed, do not invent it.
+"""
+        try:
+            response = self.model_flash.generate_content(prompt)
+            return response.text.strip()
+        except Exception as e:
+            print(f"[ContractAgent] Transcript summary error: {e}")
+            return "Transcript saved, but summary generation failed."

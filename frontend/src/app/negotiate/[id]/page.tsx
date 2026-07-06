@@ -25,7 +25,9 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [transcript, setTranscript] = useState("");
   const [speaker, setSpeaker] = useState<"assistant" | "user" | "">("");
+  const [fullTranscript, setFullTranscript] = useState<{role: string, content: string}[]>([]);
   const lottieRef = useRef<LottieRefCurrentProps>(null);
+  const propertyRef = useRef<any>(null); // To access property in event listeners
 
   // Fetch property details on mount
   useEffect(() => {
@@ -35,6 +37,7 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
         if (res.ok) {
           const json = await res.json();
           setProperty(json.data);
+          propertyRef.current = json.data;
         }
       } catch (err) {
         console.error("Failed to fetch property", err);
@@ -92,12 +95,37 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
       setIsSessionActive(false);
       setAgentSpeaking(false);
       if (lottieRef.current) lottieRef.current.stop();
+
+      // Save transcript
+      setFullTranscript((currentTranscript) => {
+        if (currentTranscript.length > 0 && propertyRef.current) {
+          const pName = propertyRef.current?.apartmentName || propertyRef.current?.title || "the property";
+          fetch("http://localhost:10000/api/documents/save-transcript", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              property_id: propertyRef.current.id,
+              property_context: pName,
+              clerk_id: user?.id,
+              transcript: currentTranscript
+            })
+          })
+          .then(res => res.json())
+          .then(data => console.log("Transcript saved:", data))
+          .catch(err => console.error("Failed to save transcript:", err));
+        }
+        return []; // Clear for next call
+      });
     });
 
     vapi.on("message", (msg: any) => {
       if (msg.type === "transcript") {
         setTranscript(msg.transcript || "");
         setSpeaker(msg.role === "assistant" ? "assistant" : "user");
+        
+        if (msg.transcriptType === "final" && msg.transcript) {
+          setFullTranscript((prev) => [...prev, { role: msg.role === "assistant" ? "assistant" : "user", content: msg.transcript }]);
+        }
       }
     });
 

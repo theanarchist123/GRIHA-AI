@@ -62,13 +62,16 @@ class ScraperAgent:
     # WebSocket helpers
     # ------------------------------------------------------------------
 
-    async def send_update(self, progress: int, status: str, found_count: int = 0):
+    async def send_update(self, progress: int, status: str, found_count: int = 0, new_property: dict = None):
         try:
-            await self.websocket.send_text(json.dumps({
+            msg: dict = {
                 "progress": progress,
                 "status": status,
                 "found_count": found_count,
-            }))
+            }
+            if new_property is not None:
+                msg["new_property"] = new_property
+            await self.websocket.send_text(json.dumps(msg))
         except Exception:
             pass
 
@@ -416,17 +419,54 @@ class ScraperAgent:
             }
 
             try:
+                saved_prop = None
                 existing = await Property.find_one(Property.external_id == external_id)
                 if existing:
                     for key, value in payload.items():
                         setattr(existing, key, value)
                     await existing.save()
+                    saved_prop = existing
                     saved_properties.append(existing)
                 else:
                     new_prop = Property(**payload)
                     await new_prop.insert()
+                    saved_prop = new_prop
                     saved_properties.append(new_prop)
                 print(f"    [saved] {society_name} — ₹{prop['approximate_rent']:,.0f}/mo")
+
+                # Stream this property to the frontend immediately
+                if saved_prop:
+                    prop_id = str(saved_prop.id) if saved_prop.id else external_id
+                    await self.send_update(
+                        30 + int((len(saved_properties) / max(len(gemini_results), 1)) * 35),
+                        f"✅ Found: {society_name}",
+                        len(saved_properties),
+                        new_property={
+                            "id": prop_id,
+                            "_id": prop_id,
+                            "external_id": external_id,
+                            "apartment_name": society_name,
+                            "title": society_name,
+                            "address": f"{society_name}, {locality}, {city}",
+                            "locality": locality,
+                            "city": city,
+                            "price": float(prop["approximate_rent"]),
+                            "size_sqft": prop.get("typical_size_sqft"),
+                            "bhk": fallback_bhk,
+                            "floor": prop.get("floor"),
+                            "bathrooms": prop.get("bathrooms"),
+                            "balconies": prop.get("balconies"),
+                            "furnished_status": prop.get("furnishing"),
+                            "images": images,
+                            "amenities": prop.get("amenities") or [],
+                            "description": prop.get("description") or "",
+                            "source_platform": "magicbricks",
+                            "source_url": source_url,
+                            "legal_status": "unknown",
+                            "is_fake": False,
+                            "listed_days_ago": 0,
+                        }
+                    )
             except Exception as e:
                 print(f"    [error] Failed to save {society_name}: {e}")
                 continue

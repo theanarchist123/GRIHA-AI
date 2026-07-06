@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { DashboardSidebar, DashboardTopBar, type DashboardSearchFilters } from "@/components/shared/Navbar";
 import { PropertyCard } from "@/components/shared/PropertyCard";
 import { SkeletonCard } from "@/components/shared/LoadingState";
@@ -140,6 +140,7 @@ export default function DashboardPage() {
   const [scrapeProgress, setScrapeProgress] = useState(0);
   const [scrapeStatus, setScrapeStatus] = useState("");
   const [scrapeFound, setScrapeFound] = useState(0);
+  const [liveProperties, setLiveProperties] = useState<Property[]>([]);
 
   const { user, isLoaded } = useUser();
   const userEmail = user?.primaryEmailAddress?.emailAddress;
@@ -238,6 +239,7 @@ export default function DashboardPage() {
     setScrapeProgress(0);
     setScrapeStatus("🔗 Connecting to scraper agent...");
     setScrapeFound(0);
+    setLiveProperties([]);
     setLoading(false);
 
     const clientId = Math.random().toString(36).substring(7);
@@ -254,10 +256,22 @@ export default function DashboardPage() {
         if (data.progress !== undefined) setScrapeProgress(data.progress);
         if (data.status) setScrapeStatus(data.status);
         if (data.found_count !== undefined) setScrapeFound(data.found_count);
+
+        // Live-stream: append new property card immediately
+        if (data.new_property) {
+          const normalized = normalizeProperty(data.new_property, Date.now());
+          setLiveProperties((prev) => {
+            // Deduplicate by id
+            if (prev.some((p) => p.id === normalized.id)) return prev;
+            return [normalized, ...prev];
+          });
+        }
+
         if (data.progress >= 100) {
           setTimeout(() => {
             setScraping(false);
             setScrapeProgress(0);
+            setLiveProperties([]);
             setFilters((prev) => ({ ...prev, _refresh: Date.now() } as any));
           }, 1500);
         }
@@ -490,14 +504,20 @@ export default function DashboardPage() {
               <div className="mb-4 bg-surface border border-forest/20 rounded-xl p-4">
                 <div className="flex items-center gap-3 mb-2">
                   <Search className="w-4 h-4 text-forest animate-pulse" />
-                  <span className="text-sm font-dm font-semibold text-charcoal">Live Scraping in Progress</span>
+                  <span className="text-sm font-dm font-semibold text-charcoal">Live Search in Progress</span>
                   <span className="text-xs font-dm text-muted ml-auto">{scrapeProgress}%</span>
                 </div>
                 <div className="w-full h-1.5 bg-sand rounded-full overflow-hidden mb-2">
                   <motion.div className="h-full bg-forest" animate={{ width: `${scrapeProgress}%` }} transition={{ ease: "easeOut", duration: 0.3 }} />
                 </div>
-                <p className="text-xs font-dm text-muted">{scrapeStatus}</p>
-                {scrapeFound > 0 && <p className="text-xs font-dm text-forest mt-1">{scrapeFound} properties found so far</p>}
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-dm text-muted">{scrapeStatus}</p>
+                  {scrapeFound > 0 && (
+                    <span className="text-xs font-dm font-bold text-forest bg-forest/10 px-2.5 py-0.5 rounded-full">
+                      {scrapeFound} found so far
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
@@ -505,6 +525,35 @@ export default function DashboardPage() {
               {loading && Array.from({ length: 4 }).map((_, i) => (
                 <SkeletonCard key={`skeleton-${i}`} className="w-[335px] shrink-0 snap-start" />
               ))}
+
+              {/* Live-streamed cards during scraping */}
+              {scraping && liveProperties.length === 0 && (
+                Array.from({ length: 2 }).map((_, i) => (
+                  <SkeletonCard key={`scrape-skeleton-${i}`} className="w-[335px] shrink-0 snap-start" />
+                ))
+              )}
+              <AnimatePresence>
+                {scraping && liveProperties.map((property, i) => (
+                  <motion.div
+                    key={`live-${property.id}`}
+                    initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="shrink-0 snap-start relative"
+                  >
+                    <div className="absolute -top-2 -right-2 z-10 bg-forest text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                      NEW
+                    </div>
+                    <PropertyCard
+                      property={property}
+                      isSavedToPipeline={savedPipelineIds.has(property.id)}
+                      isSavedToAlerts={savedAlertIds.has(property.id)}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
               {!loading && !scraping && topMatches.length === 0 && (
                 <div className="flex flex-col items-center gap-4 p-8 border border-dashed border-border-custom rounded-xl w-full text-center">
                   <Search className="w-8 h-8 text-muted" />

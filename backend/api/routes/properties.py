@@ -159,3 +159,149 @@ async def get_property(property_id: str):
         asyncio.create_task(content_service.enrich_property(property))
         
     return {"status": "success", "data": property}
+
+@router.get("/{property_id}/move-in-cost")
+async def get_move_in_cost(property_id: str):
+    if not ObjectId.is_valid(property_id):
+        raise HTTPException(status_code=400, detail="Invalid ID format")
+    
+    prop = await Property.get(ObjectId(property_id))
+    if not prop:
+        raise HTTPException(status_code=404, detail="Property not found")
+        
+    city = (prop.city or "").lower()
+    rent = prop.price or 0
+    
+    # Heuristics for Indian cities
+    deposit_months = 2
+    if "bangalore" in city or "bengaluru" in city:
+        deposit_months = 5 # Standard BLR
+    elif "mumbai" in city:
+        deposit_months = 3 # Standard MUM
+    
+    deposit = rent * deposit_months
+    brokerage = rent * 1 # Usually 1 month
+    advance_rent = rent * 1 # 1st month rent
+    society_transfer = 5000
+    moving_painting = 8000
+    
+    return {
+        "status": "success",
+        "data": {
+            "breakdown": [
+                {"label": f"Security Deposit ({deposit_months} months)", "value": deposit, "type": "refundable"},
+                {"label": "1st Month Rent in Advance", "value": advance_rent, "type": "rent"},
+                {"label": "Brokerage (1 month)", "value": brokerage, "type": "fee"},
+                {"label": "Society Move-in/Transfer Charges", "value": society_transfer, "type": "fee"},
+                {"label": "Painting & Cleaning (Estimated)", "value": moving_painting, "type": "fee"}
+            ],
+            "total": deposit + brokerage + advance_rent + society_transfer + moving_painting,
+            "deposit": deposit,
+            "fees": brokerage + society_transfer + moving_painting,
+            "advance_rent": advance_rent
+        }
+    }
+
+import httpx
+
+@router.get("/commute/calculate")
+async def calculate_commute(origin: str, destination: str):
+    """Calculate commute using Nominatim for geocoding and OSRM for routing."""
+    async with httpx.AsyncClient(verify=False) as client:
+        # Geocode origin
+        try:
+            orig_res = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={"q": origin, "format": "json", "limit": 1},
+                headers={"User-Agent": "GrihaAI/1.0"}
+            )
+            orig_data = orig_res.json()
+            if not orig_data:
+                return {"status": "error", "message": "Could not find origin location"}
+            orig_lat, orig_lon = float(orig_data[0]["lat"]), float(orig_data[0]["lon"])
+            
+            # Geocode destination
+            dest_res = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={"q": destination, "format": "json", "limit": 1},
+                headers={"User-Agent": "GrihaAI/1.0"}
+            )
+            dest_data = dest_res.json()
+            if not dest_data:
+                return {"status": "error", "message": "Could not find destination location"}
+            dest_lat, dest_lon = float(dest_data[0]["lat"]), float(dest_data[0]["lon"])
+            
+            # Get route from OSRM
+            osrm_url = f"http://router.project-osrm.org/route/v1/driving/{orig_lon},{orig_lat};{dest_lon},{dest_lat}?overview=false"
+            route_res = await client.get(osrm_url)
+            route_data = route_res.json()
+            
+            if route_data.get("code") == "Ok" and route_data.get("routes"):
+                duration_sec = route_data["routes"][0]["duration"]
+                distance_m = route_data["routes"][0]["distance"]
+                
+                # Estimate public transit (usually 1.5x driving time + walking in Indian cities)
+                transit_sec = duration_sec * 1.5 + 900 # Add 15 mins walking
+                
+                return {
+                    "status": "success",
+                    "data": {
+                        "driving": {
+                            "duration_mins": round(duration_sec / 60),
+                            "distance_km": round(distance_m / 1000, 1)
+                        },
+                        "transit": {
+                            "duration_mins": round(transit_sec / 60)
+                        }
+                    }
+                }
+            else:
+                return {"status": "error", "message": "Could not calculate route"}
+                
+        except Exception as e:
+            print(f"Commute error: {e}")
+            return {"status": "error", "message": "Error calculating commute"}
+
+import random
+
+@router.get("/{property_id}/reviews")
+async def get_property_reviews(property_id: str):
+    """Return mock community/society reviews for the property."""
+    if not ObjectId.is_valid(property_id):
+        raise HTTPException(status_code=400, detail="Invalid ID format")
+    
+    prop = await Property.get(ObjectId(property_id))
+    if not prop:
+        raise HTTPException(status_code=404, detail="Property not found")
+        
+    # Generate stable mock data based on property ID
+    random.seed(property_id)
+    
+    score_safety = round(random.uniform(3.5, 4.9), 1)
+    score_maintenance = round(random.uniform(3.0, 4.8), 1)
+    score_water = round(random.uniform(3.5, 4.7), 1)
+    
+    total_reviews = random.randint(12, 145)
+    overall_rating = round((score_safety + score_maintenance + score_water) / 3, 1)
+    
+    reviews = [
+        {"user": "Rahul S.", "date": "2 months ago", "rating": 5, "text": "Very peaceful society, great security. Zero water cuts so far."},
+        {"user": "Sneha P.", "date": "5 months ago", "rating": 4, "text": "Good amenities but visitor parking is a bit of a hassle. Maintenance team is responsive."},
+        {"user": "Amit K.", "date": "8 months ago", "rating": 3, "text": "Walls are a bit thin, can hear neighbors sometimes. Otherwise okay for the rent."},
+    ]
+    
+    random.shuffle(reviews)
+    
+    return {
+        "status": "success",
+        "data": {
+            "overall_rating": overall_rating,
+            "total_reviews": total_reviews,
+            "categories": {
+                "Safety & Security": score_safety,
+                "Maintenance": score_maintenance,
+                "Water & Power": score_water
+            },
+            "recent_reviews": reviews[:random.randint(2,3)]
+        }
+    }

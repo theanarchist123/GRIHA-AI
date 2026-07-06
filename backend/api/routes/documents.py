@@ -189,3 +189,41 @@ async def ask_documents(req: AskQuestionRequest):
         "answer": result.get("answer", "Could not find an answer."),
         "sources": result.get("sources", []),
     }
+
+
+class SaveTranscriptRequest(BaseModel):
+    property_id: str
+    property_context: str
+    clerk_id: Optional[str] = None
+    transcript: List[Dict[str, str]]
+
+@router.post("/save-transcript")
+async def save_transcript(req: SaveTranscriptRequest):
+    """Save a Vapi negotiation transcript as a document with an AI summary."""
+    if not req.transcript:
+        raise HTTPException(400, "Transcript is empty")
+
+    summary = await contract_agent.summarize_transcript(req.transcript, req.property_context)
+    
+    user_ref = None
+    if req.clerk_id:
+        user = await User.find_one(User.clerk_id == req.clerk_id)
+        if user:
+            user_ref = user.id
+
+    doc = DocumentModel(
+        user=user_ref,
+        property=ObjectId(req.property_id) if ObjectId.is_valid(req.property_id) else None,
+        document_type="negotiation_transcript",
+        filename=f"Negotiation Transcript - {req.property_context}",
+        ai_summary=summary,
+        extracted_text="\n".join([f"{msg.get('role', 'unknown').capitalize()}: {msg.get('content', '')}" for msg in req.transcript]),
+        extracted_data={"messages": req.transcript},
+    )
+    await doc.insert()
+    
+    return {
+        "status": "success",
+        "document_id": str(doc.id),
+        "ai_summary": summary,
+    }

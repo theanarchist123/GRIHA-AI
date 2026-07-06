@@ -15,9 +15,15 @@ import {
   Sofa,
   Sparkles,
   TrendingUp,
+  Calendar,
 } from "lucide-react";
 import type { Property } from "@/lib/mockData";
 import { formatPrice } from "@/lib/utils";
+import { AffordabilityCalc } from "@/components/shared/AffordabilityCalc";
+import { MoveInCostBreakdown } from "@/components/shared/MoveInCostBreakdown";
+import { ScheduleVisitModal } from "@/components/shared/ScheduleVisitModal";
+import { CommuteCalc } from "@/components/shared/CommuteCalc";
+import { SocietyReviews } from "@/components/shared/SocietyReviews";
 import { STATIC_IMAGES } from "@/lib/unsplash";
 
 function parseId(value: unknown): string | null {
@@ -204,6 +210,7 @@ export default function PropertyDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -292,10 +299,11 @@ export default function PropertyDetailPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left Column */}
+        <div className="lg:col-span-2 space-y-6">
           {/* Image Gallery */}
-          <div className="lg:col-span-2 space-y-3">
+          <div className="space-y-3">
             <div className="rounded-2xl overflow-hidden border border-border-custom bg-surface">
               <img
                 src={property.images[selectedImage] || property.images[0] || STATIC_IMAGES.apartment1}
@@ -323,6 +331,85 @@ export default function PropertyDetailPage() {
             )}
           </div>
 
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-surface rounded-2xl border border-border-custom p-6"
+          >
+            <h2 className="font-playfair text-2xl text-charcoal mb-3 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-forest" />
+              AI Property Overview
+            </h2>
+            <p className="text-sm font-dm text-charcoal leading-relaxed">
+              {overview}
+            </p>
+
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-cream rounded-xl p-4 border border-border-custom">
+                <h3 className="text-sm font-semibold text-charcoal mb-2">Top Highlights</h3>
+                {highlights.length > 0 ? (
+                  <ul className="space-y-2 text-sm text-charcoal">
+                    {highlights.map((item, idx) => (
+                      <li key={`${item}-${idx}`} className="flex items-start gap-2">
+                        <ShieldCheck className="w-4 h-4 text-success mt-0.5 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted">No highlight signals could be extracted from the current listing fields.</p>
+                )}
+              </div>
+
+              <div className="bg-cream rounded-xl p-4 border border-border-custom">
+                <h3 className="text-sm font-semibold text-charcoal mb-2">Watchouts</h3>
+                {watchouts && watchouts.length > 0 ? (
+                  <ul className="space-y-2 text-sm text-charcoal">
+                    {watchouts.map((item, idx) => (
+                      <li key={`${item}-${idx}`} className="flex items-start gap-2">
+                        <ShieldAlert className="w-4 h-4 text-warm-gold mt-0.5 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted">No explicit watchouts identified from the available source listing fields.</p>
+                )}
+              </div>
+            </div>
+          </motion.section>
+
+          <AffordabilityCalc rentAmount={property.price} city={property.city} />
+          <MoveInCostBreakdown propertyId={property.id} />
+          <CommuteCalc propertyAddress={property.address || property.locality} propertyCity={property.city} />
+          <SocietyReviews propertyId={property.id} />
+          
+          <section className="bg-surface rounded-2xl border border-border-custom p-5">
+            <h3 className="font-dm font-bold text-charcoal mb-2">Location Insights</h3>
+            <p className="text-sm font-dm text-charcoal leading-relaxed">
+              {locationInsights}
+            </p>
+          </section>
+
+          <section className="bg-surface rounded-2xl border border-border-custom p-5">
+            <h3 className="font-dm font-bold text-charcoal mb-2 flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4 text-forest" /> Investment Outlook
+            </h3>
+            <p className="text-sm font-dm text-charcoal leading-relaxed">
+              {investmentOutlook}
+            </p>
+          </section>
+
+          <section className="bg-surface rounded-2xl border border-border-custom p-5">
+            <h3 className="font-dm font-bold text-charcoal mb-2">Negotiation Tips</h3>
+            <p className="text-sm font-dm text-charcoal leading-relaxed">
+              {negotiationTips}
+            </p>
+          </section>
+        </div>
+
+        {/* Right Column */}
+        <div className="lg:col-span-1 space-y-6">
           <div className="bg-surface rounded-2xl border border-border-custom p-6 flex flex-col gap-4">
             <div>
               <h1 className="font-playfair text-3xl text-charcoal leading-tight">{heading}</h1>
@@ -419,13 +506,20 @@ export default function PropertyDetailPage() {
                 >
                   Verify Legal Docs
                 </Link>
-                <Link
-                  href={`/negotiate/${propertyId}`}
-                  className="flex items-center justify-center px-4 py-2.5 bg-transparent border-2 border-forest text-forest font-semibold rounded-lg hover:bg-forest/5 transition-colors"
+                <button
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  className="flex items-center justify-center px-4 py-2.5 bg-forest text-cream font-semibold rounded-lg hover:bg-forest-light transition-colors gap-2"
                 >
-                  Negotiate
-                </Link>
+                  <Calendar className="w-4 h-4" /> Schedule Visit
+                </button>
               </div>
+              
+              <Link
+                href={`/negotiate/${propertyId}`}
+                className="w-full flex items-center justify-center px-4 py-2.5 bg-transparent border-2 border-forest text-forest font-semibold rounded-lg hover:bg-forest/5 transition-colors"
+              >
+                Negotiate
+              </Link>
               
               <button className="w-full flex items-center justify-center px-4 py-2.5 bg-transparent border border-border-custom text-charcoal font-semibold rounded-lg hover:bg-cream transition-colors">
                 Save to Pipeline
@@ -440,82 +534,14 @@ export default function PropertyDetailPage() {
             </div>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 bg-surface rounded-2xl border border-border-custom p-6"
-          >
-            <h2 className="font-playfair text-2xl text-charcoal mb-3 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-forest" />
-              AI Property Overview
-            </h2>
-            <p className="text-sm font-dm text-charcoal leading-relaxed">
-              {overview}
-            </p>
-
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-cream rounded-xl p-4 border border-border-custom">
-                <h3 className="text-sm font-semibold text-charcoal mb-2">Top Highlights</h3>
-                {highlights.length > 0 ? (
-                  <ul className="space-y-2 text-sm text-charcoal">
-                    {highlights.map((item, idx) => (
-                      <li key={`${item}-${idx}`} className="flex items-start gap-2">
-                        <ShieldCheck className="w-4 h-4 text-success mt-0.5 shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted">No highlight signals could be extracted from the current listing fields.</p>
-                )}
-              </div>
-
-              <div className="bg-cream rounded-xl p-4 border border-border-custom">
-                <h3 className="text-sm font-semibold text-charcoal mb-2">Watchouts</h3>
-                {watchouts && watchouts.length > 0 ? (
-                  <ul className="space-y-2 text-sm text-charcoal">
-                    {watchouts.map((item, idx) => (
-                      <li key={`${item}-${idx}`} className="flex items-start gap-2">
-                        <ShieldAlert className="w-4 h-4 text-warm-gold mt-0.5 shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted">No explicit watchouts identified from the available source listing fields.</p>
-                )}
-              </div>
-            </div>
-          </motion.section>
-
-          <div className="space-y-4">
-            <section className="bg-surface rounded-2xl border border-border-custom p-5">
-              <h3 className="font-dm font-bold text-charcoal mb-2">Location Insights</h3>
-              <p className="text-sm font-dm text-charcoal leading-relaxed">
-                {locationInsights}
-              </p>
-            </section>
-
-            <section className="bg-surface rounded-2xl border border-border-custom p-5">
-              <h3 className="font-dm font-bold text-charcoal mb-2 flex items-center gap-1.5">
-                <TrendingUp className="w-4 h-4 text-forest" /> Investment Outlook
-              </h3>
-              <p className="text-sm font-dm text-charcoal leading-relaxed">
-                {investmentOutlook}
-              </p>
-            </section>
-
-            <section className="bg-surface rounded-2xl border border-border-custom p-5">
-              <h3 className="font-dm font-bold text-charcoal mb-2">Negotiation Tips</h3>
-              <p className="text-sm font-dm text-charcoal leading-relaxed">
-                {negotiationTips}
-              </p>
-            </section>
-          </div>
-        </div>
       </div>
+
+      <ScheduleVisitModal 
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        propertyTitle={heading}
+        propertyAddress={`${property.address}, ${property.city}`}
+      />
     </div>
   );
 }

@@ -48,6 +48,7 @@ export default function DocumentsPage() {
   const [aiAnswer, setAiAnswer] = useState("");
   const [askingAI, setAskingAI] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [selectedTranscript, setSelectedTranscript] = useState<{title: string, summary: string, messages: any[]} | null>(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -248,9 +249,22 @@ export default function DocumentsPage() {
                         </div>
                       </div>
                       <div className="flex gap-2 mt-3 pt-3 border-t border-border-custom">
-                        <button className="flex items-center gap-1 text-xs text-forest font-dm font-semibold hover:underline">
-                          <Eye className="w-3 h-3" /> View
-                        </button>
+                        {doc.document_type === "negotiation_transcript" && Array.isArray(doc.extracted_data?.messages) ? (
+                          <button 
+                            onClick={() => setSelectedTranscript({
+                              title: doc.filename,
+                              summary: doc.ai_summary,
+                              messages: doc.extracted_data.messages
+                            })}
+                            className="flex items-center gap-1 text-xs text-forest font-dm font-semibold hover:underline"
+                          >
+                            <MessageSquare className="w-3 h-3" /> View Transcript
+                          </button>
+                        ) : (
+                          <button className="flex items-center gap-1 text-xs text-forest font-dm font-semibold hover:underline">
+                            <Eye className="w-3 h-3" /> View
+                          </button>
+                        )}
                         <button className="flex items-center gap-1 text-xs text-forest font-dm font-semibold hover:underline">
                           <Download className="w-3 h-3" /> Download
                         </button>
@@ -305,6 +319,53 @@ export default function DocumentsPage() {
           </div>
         </div>
       </div>
+
+      {/* Transcript Modal */}
+      {selectedTranscript && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/50 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-cream rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+          >
+            <div className="p-4 border-b border-border-custom flex items-center justify-between bg-surface">
+              <div>
+                <h3 className="font-dm font-bold text-charcoal">{selectedTranscript.title}</h3>
+                <p className="text-xs text-muted font-dm">AI Voice Negotiation</p>
+              </div>
+              <button 
+                onClick={() => setSelectedTranscript(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-border-custom/50 text-muted transition-colors"
+              >
+                ×
+              </button>
+            </div>
+            
+            {selectedTranscript.summary && (
+              <div className="p-4 bg-forest/5 border-b border-forest/10">
+                <p className="text-xs font-dm font-bold text-forest mb-1">AI Summary</p>
+                <div className="text-sm font-dm text-charcoal whitespace-pre-wrap">{selectedTranscript.summary}</div>
+              </div>
+            )}
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {selectedTranscript.messages.map((msg, idx) => {
+                const isUser = msg.role === "user";
+                return (
+                  <div key={idx} className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isUser ? "bg-forest text-white" : "bg-warm-gold text-white"}`}>
+                      {isUser ? <span className="text-xs font-bold">U</span> : <MessageSquare className="w-4 h-4" />}
+                    </div>
+                    <div className={`px-4 py-3 rounded-2xl max-w-[75%] ${isUser ? "bg-forest text-white rounded-tr-none" : "bg-surface border border-border-custom rounded-tl-none text-charcoal"}`}>
+                      <p className="text-sm font-dm">{msg.content}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
