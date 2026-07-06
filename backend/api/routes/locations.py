@@ -64,7 +64,7 @@ async def autocomplete_locations(q: str = Query(..., min_length=1)):
             "countrycodes": "in",
         }
 
-        async with httpx.AsyncClient(timeout=4.0, headers={"User-Agent": USER_AGENT}) as client:
+        async with httpx.AsyncClient(timeout=4.0, headers={"User-Agent": USER_AGENT}, verify=False) as client:
             response = await client.get(NOMINATIM_SEARCH_URL, params=params)
             response.raise_for_status()
             payload = response.json()
@@ -100,7 +100,7 @@ async def reverse_geocode_location(
             "zoom": 14,
         }
 
-        async with httpx.AsyncClient(timeout=4.0, headers={"User-Agent": USER_AGENT}) as client:
+        async with httpx.AsyncClient(timeout=4.0, headers={"User-Agent": USER_AGENT}, verify=False) as client:
             response = await client.get(NOMINATIM_REVERSE_URL, params=params)
             response.raise_for_status()
             payload = response.json()

@@ -18,41 +18,69 @@ import google.generativeai as genai
 from config import settings
 
 
+# Ordered list of models to try — if the primary hits its quota, try the next
+GEMINI_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+    "gemini-3-flash-preview",
+    "gemini-flash-latest",
+]
+
+
 class GeminiExtractor:
     """Uses Gemini for property research and extraction."""
 
     def __init__(self):
         self._enabled = bool(settings.gemini_api_key)
-        self._model = None
+        self._models: list = []
         if self._enabled:
             genai.configure(api_key=settings.gemini_api_key)
-            self._model = genai.GenerativeModel("gemini-3-flash-preview")
+            for name in GEMINI_MODELS:
+                try:
+                    self._models.append(genai.GenerativeModel(name))
+                except Exception:
+                    pass
+        self._model = self._models[0] if self._models else None
 
     # ------------------------------------------------------------------
     # Internal LLM call
     # ------------------------------------------------------------------
 
     async def _call(self, prompt: str) -> Optional[Any]:
-        if not self._model:
+        if not self._models:
             return None
-        try:
-            response = await asyncio.to_thread(
-                self._model.generate_content, prompt
-            )
-            text = (response.text or "").strip()
-            if not text:
-                return None
 
-            # Extract JSON from response
-            json_match = re.search(r"[\[{].*[\]}]", text, re.DOTALL)
-            if json_match:
-                return json.loads(json_match.group())
-            return None
-        except json.JSONDecodeError:
-            return None
-        except Exception as e:
-            print(f"  [gemini] API error: {e}")
-            return None
+        last_error = None
+        for model in self._models:
+            try:
+                response = await asyncio.to_thread(
+                    model.generate_content, prompt
+                )
+                text = (response.text or "").strip()
+                if not text:
+                    continue
+
+                # Extract JSON from response
+                json_match = re.search(r"[\[{].*[\]}]", text, re.DOTALL)
+                if json_match:
+                    return json.loads(json_match.group())
+                return None
+            except json.JSONDecodeError:
+                return None
+            except Exception as e:
+                errmsg = str(e)
+                if "429" in errmsg or "quota" in errmsg.lower():
+                    print(f"  [gemini] Quota exceeded for {model.model_name}, trying next...")
+                    last_error = errmsg
+                    continue  # Try next model
+                print(f"  [gemini] API error ({model.model_name}): {e}")
+                last_error = errmsg
+                continue
+
+        if last_error and "429" in last_error:
+            raise RuntimeError(f"All Gemini models quota exceeded. Try again tomorrow or add billing at https://ai.dev. Error: {last_error[:200]}")
+        return None
 
     # ------------------------------------------------------------------
     # PRIMARY: Research real properties using Gemini's knowledge

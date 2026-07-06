@@ -326,9 +326,14 @@ class ScraperAgent:
         )
 
         print(f"\n  [phase1] Gemini researching {fallback_bhk} in {locality}, {city}...")
-        gemini_results = await self.extractor.research_properties(
-            locality=locality, city=city, bhk=fallback_bhk, count=8
-        )
+        try:
+            gemini_results = await self.extractor.research_properties(
+                locality=locality, city=city, bhk=fallback_bhk, count=8
+            )
+        except RuntimeError as quota_err:
+            # Bubble up quota errors so frontend shows a useful message
+            await self.send_update(100, f"⚠️ {quota_err}", 0)
+            return []
         print(f"  [phase1] Gemini returned {len(gemini_results)} properties")
 
         if gemini_results:
