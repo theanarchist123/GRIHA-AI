@@ -21,6 +21,12 @@ const config: Config = {
         "border-custom": "#E5E0D8",
         danger: "#C0392B",
         success: "#27AE60",
+        "dark-bg": "#0F1014",
+        "dark-card": "#1C1C21",
+        "dark-border": "#2A2B32",
+        "dark-text": "#8F9198",
+        "dark-icon": "#6B6D76",
+        "dark-img": "#111216",
       },
       fontFamily: {
         playfair: ["Playfair Display", "serif"],

@@ -2,12 +2,48 @@
 Neighbourhood API Routes — Gemini-powered locality intelligence.
 """
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
 from typing import Optional
 from services.neighbourhood_agent import NeighbourhoodAgent
+from services.neighbourhood_chat_agent import NeighbourhoodChatAgent
+from database.models.property import Property
+from bson import ObjectId
 
 router = APIRouter(prefix="/api/neighbourhood", tags=["Neighbourhood"])
 neighbourhood_agent = NeighbourhoodAgent()
+chat_agent = NeighbourhoodChatAgent()
 
+class ChatRequest(BaseModel):
+    property_id: str
+    query: str
+
+@router.post("/chat")
+async def chat_with_neighbourhood(req: ChatRequest):
+    """Interactive chat with map markers."""
+    try:
+        # Convert string to ObjectId for Beanie lookup
+        prop = await Property.get(ObjectId(req.property_id))
+    except Exception:
+        # Fallback if property_id is not valid ObjectId
+        prop = await Property.find_one(Property.external_id == req.property_id)
+        
+    if not prop:
+        # If still not found, we can try by locality? But we need a property for exact location
+        raise HTTPException(404, "Property not found")
+        
+    # Get address or locality to geocode
+    address = prop.address if prop.address else f"{prop.locality}, {prop.city}"
+    
+    try:
+        res = await chat_agent.chat(
+            property_id=str(prop.id), 
+            property_address=address, 
+            property_title=prop.title, 
+            query=req.query
+        )
+        return {"status": "success", "data": res}
+    except Exception as e:
+        raise HTTPException(500, f"Chat failed: {str(e)}")
 
 @router.get("/{locality}")
 async def get_neighbourhood_report(

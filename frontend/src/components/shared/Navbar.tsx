@@ -24,11 +24,12 @@ import {
 
 const NAV_ITEMS = [
   { label: "My Matches", href: "/dashboard", icon: Home, badge: 8 },
-  { label: "Pipeline", href: "/dashboard#pipeline", icon: BarChart3 },
+  { label: "Pipeline", href: "/pipeline", icon: BarChart3 },
+  { label: "Price Drop Alerts", href: "/price-drop-alerts", icon: Bell },
   { label: "Legal Checks", href: "/legal/prop-1", icon: Scale },
   { label: "Negotiations", href: "/negotiate/prop-1", icon: MessageSquare },
   { label: "Documents", href: "/documents", icon: FileText },
-  { label: "Neighbourhood", href: "/neighbourhood/bandra-west", icon: MapPin },
+  { label: "Neighbourhood", href: "/neighbourhood", icon: MapPin },
   { label: "Preferences", href: "/preferences", icon: Settings },
 ];
 
@@ -120,13 +121,19 @@ export interface DashboardSearchFilters {
 }
 
 interface DashboardTopBarProps {
-  filters: DashboardSearchFilters;
-  onApplyFilters: (filters: DashboardSearchFilters) => void;
+  filters?: DashboardSearchFilters;
+  onApplyFilters?: (filters: DashboardSearchFilters) => void;
 }
 
 export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProps) {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const [draftFilters, setDraftFilters] = useState<DashboardSearchFilters>(filters);
+  const [draftFilters, setDraftFilters] = useState<DashboardSearchFilters>(filters || {
+    location: "",
+    bhk: "Any BHK",
+    gated: false,
+    pet: false,
+    parking: false,
+  });
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -134,7 +141,7 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setDraftFilters(filters);
+    if (filters) setDraftFilters(filters);
   }, [filters]);
 
   // Close search when clicking outside
@@ -159,7 +166,7 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
       try {
         setLoadingSuggestions(true);
         const res = await fetch(
-          `http://localhost:8000/api/locations/autocomplete?q=${encodeURIComponent(draftFilters.location.trim())}`,
+          `http://localhost:10000/api/locations/autocomplete?q=${encodeURIComponent(draftFilters.location.trim())}`,
           { signal: controller.signal }
         );
 
@@ -211,7 +218,7 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
             lon: String(position.coords.longitude),
           });
 
-          const response = await fetch(`http://localhost:8000/api/locations/reverse?${params.toString()}`);
+          const response = await fetch(`http://localhost:10000/api/locations/reverse?${params.toString()}`);
           if (!response.ok) {
             throw new Error("reverse_geocode_failed");
           }
@@ -225,7 +232,7 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
 
           const nextFilters = { ...draftFilters, location: detectedLocation };
           setDraftFilters(nextFilters);
-          onApplyFilters(nextFilters);
+          if (onApplyFilters) onApplyFilters(nextFilters);
           setIsSearchExpanded(false);
           setLocationSuggestions([]);
           setLocationStatus(`Showing properties near ${detectedLocation}`);
@@ -255,7 +262,7 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
   };
 
   const applyFilters = () => {
-    onApplyFilters(draftFilters);
+    if (onApplyFilters) onApplyFilters(draftFilters);
     setIsSearchExpanded(false);
     setLocationSuggestions([]);
   };
@@ -301,6 +308,8 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
               <div className="flex-1 flex items-center px-3 relative">
                 <Search className="w-4 h-4 text-muted mr-3 shrink-0" />
                 <input
+                  id="location-search"
+                  name="location-search"
                   type="text"
                   placeholder="Where do you want to live?"
                   value={draftFilters.location}

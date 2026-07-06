@@ -9,23 +9,42 @@ import traceback
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 
-import google.generativeai as genai
 import httpx
 from config import settings
 from database.models.neighbourhood_report import NeighbourhoodReport
 from services.activity_logger import log_activity
 
+OLLAMA_API_KEY = "308b136d86a3491d98b0d7332865bf42.naSRy7f_Xvvz7MMWykJi5gM6"
 
 class NeighbourhoodAgent:
     """
-    Gemini-powered neighbourhood intelligence.
+    Ollama-powered neighbourhood intelligence.
     Generates comprehensive locality reports cached for 7 days.
     """
 
     def __init__(self):
-        if settings.gemini_api_key:
-            genai.configure(api_key=settings.gemini_api_key)
-        self.model = genai.GenerativeModel("gemini-3-flash-preview")
+        self.model = "nemotron-3-nano:30b"
+
+    async def _ollama_generate(self, prompt: str, format_json: bool = False) -> str:
+        """Helper to call Ollama Cloud API."""
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "stream": False
+        }
+        if format_json:
+            payload["format"] = "json"
+            
+        async with httpx.AsyncClient(verify=False) as client:
+            resp = await client.post(
+                "https://ollama.com/api/chat",
+                json=payload,
+                headers={"Authorization": f"Bearer {OLLAMA_API_KEY}"},
+                timeout=60.0
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("message", {}).get("content", "")
 
     async def get_or_generate_report(
         self,
@@ -177,8 +196,8 @@ Return this EXACT JSON structure:
 Return ONLY valid JSON for {locality}, {city}. Use REAL place names. Be specific and accurate.
 """
         try:
-            response = self.model.generate_content(prompt)
-            raw = response.text.strip()
+            raw = await self._ollama_generate(prompt, format_json=True)
+            raw = raw.strip()
             # Clean markdown
             if raw.startswith("```"):
                 raw = raw.split("\n", 1)[1] if "\n" in raw else raw

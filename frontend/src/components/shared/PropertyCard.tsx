@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn, formatPrice } from "@/lib/utils";
-import { MapPin, Maximize2, Building2, AlertTriangle } from "lucide-react";
+import { MapPin, Maximize2, Building2, AlertTriangle, Bookmark, Bell } from "lucide-react";
+import { useState } from "react";
 import type { Property } from "@/lib/mockData";
 
 interface PropertyCardProps {
@@ -19,6 +20,53 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
   };
   const cardTitle = cleanName(property.apartmentName) || cleanName(property.title) || `${property.bhk} in ${property.locality}`;
   const cardInsight = (property.aiInsight || `${property.bhk} listing in ${property.locality}.`).replace(/\.{3,}\s*$/, ".").trim();
+
+  const [savedToPipeline, setSavedToPipeline] = useState(false);
+  const [savedToAlerts, setSavedToAlerts] = useState(false);
+
+  const handleSaveToPipeline = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (savedToPipeline) return;
+    try {
+      const res = await fetch("http://localhost:10000/api/pipeline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          property_id: property.id,
+          title: cardTitle || property.address,
+          location: property.locality,
+          price: formatPrice(property.price) + (property.priceType === "rent" ? "/mo" : ""),
+          image: property.images[0] || "",
+          status: "shortlisted"
+        })
+      });
+      if (res.ok) setSavedToPipeline(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveToAlerts = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (savedToAlerts) return;
+    try {
+      const res = await fetch("http://localhost:10000/api/alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          property_id: property.id,
+          title: cardTitle || property.address,
+          location: property.locality,
+          price: formatPrice(property.price) + (property.priceType === "rent" ? "/mo" : ""),
+          image: property.images[0] || "",
+          type: property.bhk || "Property"
+        })
+      });
+      if (res.ok) setSavedToAlerts(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <motion.div
@@ -39,13 +87,30 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
             alt={property.address}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
+          {/* Action Buttons */}
+          <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
+            <button 
+              onClick={handleSaveToPipeline}
+              className={`p-2 bg-white rounded-full shadow-sm transition-colors ${savedToPipeline ? "text-forest" : "text-muted hover:text-forest"}`}
+              title="Save to Pipeline"
+            >
+              <Bookmark className="w-4 h-4" fill={savedToPipeline ? "currentColor" : "none"} />
+            </button>
+            <button 
+              onClick={handleSaveToAlerts}
+              className={`p-2 bg-white rounded-full shadow-sm transition-colors ${savedToAlerts ? "text-forest" : "text-muted hover:text-forest"}`}
+              title="Add Price Drop Alert"
+            >
+              <Bell className="w-4 h-4" fill={savedToAlerts ? "currentColor" : "none"} />
+            </button>
+          </div>
           {/* Match Score Badge */}
           <div className="absolute top-3 right-3 bg-forest text-white text-sm font-bold px-3 py-1.5 rounded-full">
             {property.matchScore}% Match
           </div>
           {/* Red Flag Badge */}
           {property.photoRedFlags.length > 0 && (
-            <div className="absolute top-3 left-3 bg-warm-gold text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
+            <div className="absolute top-14 left-3 bg-warm-gold text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" />
               {property.photoRedFlags.length} Flag{property.photoRedFlags.length > 1 ? "s" : ""}
             </div>

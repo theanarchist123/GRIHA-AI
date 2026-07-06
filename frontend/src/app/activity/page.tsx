@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import {
   Bell, CheckCircle2, MessageSquare, Scale, FileText,
-  AlertTriangle, Settings, ArrowRight, Loader2, Sparkles, Filter
+  AlertTriangle, Settings, ArrowRight, Loader2, Sparkles, Filter, MapPin
 } from "lucide-react";
 import { DashboardSidebar, DashboardTopBar } from "@/components/shared/Navbar";
 
@@ -43,7 +43,7 @@ export default function ActivityPage() {
   async function fetchActivity() {
     setLoading(true);
     try {
-      let url = `http://localhost:8000/api/activity/?limit=50`;
+      let url = `http://localhost:10000/api/activity/?limit=50`;
       if (userId) url += `&clerk_id=${userId}`;
       if (filter && filter !== "all") url += `&type_filter=${filter}`;
 

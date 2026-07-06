@@ -1,4 +1,5 @@
 import re
+import asyncio
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
@@ -83,7 +84,8 @@ async def list_properties(
 
     final_query = {"$and": conditions} if len(conditions) > 1 else conditions[0]
     properties = await Property.find(final_query).to_list()
-    await _enrich_missing_card_content(properties)
+    # Run enrichment in the background so we don't block the API response
+    asyncio.create_task(_enrich_missing_card_content(properties))
     return {"status": "success", "data": properties}
 
 @router.get("/search")
@@ -136,7 +138,7 @@ async def search_properties(
         results = await Property.find(fallback_query).sort([("price", -1)]).to_list()
         fallback_applied = True
 
-    await _enrich_missing_card_content(results)
+    asyncio.create_task(_enrich_missing_card_content(results))
     return {
         "status": "success",
         "results": results,
@@ -156,15 +158,6 @@ async def get_property(property_id: str):
         raise HTTPException(status_code=404, detail="Property not found")
 
     if not property.ai_detail_overview or not property.ai_card_summary:
-        try:
-            property = await content_service.enrich_property(property)
-        except Exception:
-            # Even if save fails, return factual generated content in this response.
-            try:
-                generated = await content_service.generate_content(property)
-                for key, value in generated.items():
-                    setattr(property, key, value)
-            except Exception:
-                pass
+        asyncio.create_task(content_service.enrich_property(property))
         
     return {"status": "success", "data": property}

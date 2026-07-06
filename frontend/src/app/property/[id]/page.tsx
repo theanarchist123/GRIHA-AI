@@ -214,7 +214,7 @@ export default function PropertyDetailPage() {
       setError(null);
 
       try {
-        const res = await fetch(`http://localhost:8000/api/properties/${propertyId}`);
+        const res = await fetch(`http://localhost:10000/api/properties/${propertyId}`);
         const json = await res.json();
         if (!res.ok || json?.status !== "success" || !json?.data) {
           throw new Error(json?.detail || "Failed to fetch property details.");
@@ -281,6 +281,14 @@ export default function PropertyDetailPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to matches
           </Link>
+          <div className="flex items-center gap-2 ml-auto">
+            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-charcoal bg-white border border-border-custom rounded-md hover:bg-cream transition-colors">
+              <ExternalLink className="w-3.5 h-3.5" /> Copy Link
+            </button>
+            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-500 rounded-md hover:bg-emerald-600 transition-colors">
+              WhatsApp
+            </button>
+          </div>
         </div>
       </div>
 
@@ -401,6 +409,34 @@ export default function PropertyDetailPage() {
                   Open listing source <ExternalLink className="w-3 h-3" />
                 </a>
               )}
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  href={`/legal/${propertyId}`}
+                  className="flex items-center justify-center px-4 py-2.5 bg-forest text-cream font-semibold rounded-lg hover:bg-forest-light transition-colors"
+                >
+                  Verify Legal Docs
+                </Link>
+                <Link
+                  href={`/negotiate/${propertyId}`}
+                  className="flex items-center justify-center px-4 py-2.5 bg-transparent border-2 border-forest text-forest font-semibold rounded-lg hover:bg-forest/5 transition-colors"
+                >
+                  Negotiate
+                </Link>
+              </div>
+              
+              <button className="w-full flex items-center justify-center px-4 py-2.5 bg-transparent border border-border-custom text-charcoal font-semibold rounded-lg hover:bg-cream transition-colors">
+                Save to Pipeline
+              </button>
+              
+              <Link
+                href={`/neighbourhood/${propertyId}`}
+                className="w-full flex items-center justify-center px-4 py-2.5 bg-transparent border border-border-custom text-charcoal font-semibold rounded-lg hover:bg-cream transition-colors gap-2"
+              >
+                <MapPin className="w-4 h-4 text-muted" /> Neighbourhood Report
+              </Link>
             </div>
           </div>
         </div>

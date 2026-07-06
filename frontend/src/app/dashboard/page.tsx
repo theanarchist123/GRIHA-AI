@@ -234,7 +234,7 @@ export default function DashboardPage() {
     setLoading(false);
 
     const clientId = Math.random().toString(36).substring(7);
-    const ws = new WebSocket(`ws://localhost:8000/api/ws/scrape-progress/${clientId}`);
+    const ws = new WebSocket(`ws://localhost:10000/api/ws/scrape-progress/${clientId}`);
 
     ws.onopen = () => {
       setScrapeStatus("🔍 Connected! Starting live property search...");
@@ -299,10 +299,23 @@ export default function DashboardPage() {
         if (filters.parking) params.set("parking", "true");
 
         const searchUrl = params.toString()
-          ? `http://localhost:8000/api/properties/search?${params.toString()}`
-          : "http://localhost:8000/api/properties/search";
+          ? `http://localhost:10000/api/properties/search?${params.toString()}`
+          : "http://localhost:10000/api/properties/search";
 
-        const searchRes = await fetch(searchUrl);
+        let searchRes;
+        let retryCount = 0;
+        while (retryCount < 3) {
+          try {
+            searchRes = await fetch(searchUrl);
+            break;
+          } catch (err) {
+            retryCount++;
+            if (retryCount >= 3) throw err;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+        
+        if (!searchRes) throw new Error("Failed to fetch after retries");
         const searchJson = await searchRes.json();
         let apiProperties = Array.isArray(searchJson.results)
           ? searchJson.results
@@ -327,7 +340,7 @@ export default function DashboardPage() {
 
         // Only fallback when there are no active filters
         if (apiProperties.length === 0 && !hasActiveFilters) {
-          const allRes = await fetch("http://localhost:8000/api/properties/");
+          const allRes = await fetch("http://localhost:10000/api/properties/");
           const allJson = await allRes.json();
           apiProperties = Array.isArray(allJson.data) ? allJson.data : [];
         }
