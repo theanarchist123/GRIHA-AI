@@ -1,4 +1,70 @@
-"import smtplib\nfrom email.mime.text import MIMEText\nfrom email.mime.multipart import MIMEMultipart\nfrom config import settings\n\nclass EmailService:\n    def __init__(self):\n        self.smtp_email = settings.smtp_email\n        self.smtp_password = settings.smtp_password\n        self.smtp_host = \"smtp.gmail.com\"\n        self.smtp_port = 587\n        \n        self.from_email = f\"Griha AI <{self.smtp_email}>\"\n\n    async def send_morning_digest(self, to_email: str, new_match_count: int, location: str):\n        \"\"\"Sends the Morning Digest email using Google SMTP\"\"\"\n        if not self.smtp_email or not self.smtp_password:\n            print(\"[EmailService] No SMTP credentials configured. Skipping email.\")\n            return False\n\n        try:\n            subject = f\"Your Daily Griha AI Digest: {new_match_count} new properties in {location}\"\n            \n            html_content = f\"\"\"\n            <div style=\"font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #000; color: #fff; padding: 20px; border-radius: 8px;\">\n                <h1 style=\"color: #10B981; border-bottom: 1px solid #333; padding-bottom: 10px;\">Griha AI Autopilot</h1>\n                <p style=\"font-size: 16px;\">Good Morning!</p>\n                <p style=\"font-size: 16px;\">Your deep research agent has been working overnight.</p>\n                \n                <div style=\"background-color: #111; border: 1px solid #333; padding: 15px; border-radius: 6px; margin: 20px 0;\">\n                    <h2 style=\"margin-top: 0; color: #fff;\">{new_match_count} New Matches Found</h2>\n                    <p style=\"color: #aaa; margin-bottom: 0;\">Target Area: {location}</p>\n                </div>\n                \n                <p style=\"font-size: 16px;\">Click below to review your new highly-curated property matches and intelligence reports.</p>\n                \n                <a href=\"{settings.frontend_url}/autopilot\" style=\"display: inline-block; background-color: #10B
-<truncated 1342 bytes>
-"        except Exception as e:\n            print(f\"[EmailService] Error sending email to {to_email}: {str(e)}\")\n            return False\n\n    async def send_price_drop_alert(self, to_email: str, property_name: str, original_price: float, new_price: float, target_price: float):\n        \"\"\"Sends an immediate Price Drop Alert email\"\"\"\n        if not self.smtp_email or not self.smtp_password:\n            return False\n\n        try:\n            savings = original_price - new_price\n            subject = f\"🚨 PRICE DROP ALERT: {property_name} just dropped to INR {int(new_price):,}!\"\n            \n            html_content = f\"\"\"\n            <div style=\"font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #000; color: #fff; padding: 20px; border-radius: 8px;\">\n                <h1 style=\"color: #10B981; border-bottom: 1px solid #333; padding-bottom: 10px;\">Griha AI Price Alerts</h1>\n                <p style=\"font-size: 16px;\">Great news! A property on your watchlist just dropped below your target price.</p>\n                \n                <div style=\"background-color: #111; border: 1px solid #10B981; padding: 15px; border-radius: 6px; margin: 20px 0;\">\n                    <h2 style=\"margin-top: 0; color: #fff;\">{property_name}</h2>\n                    <p style=\"font-size: 18px; margin: 5px 0;\"><strong>Original Price:</strong> <strike>INR {int(original_price):,}</strike></p>\n                    <p style=\"font-size: 18px; margin: 5px 0;\"><strong>Your Target:</strong> INR {int(target_price):,}</p>\n                    <p style=\"font-size: 22px; color: #10B981; margin: 5px 0; font-weight: bold;\"><strong>New Price:</strong> INR {int(new_price):,}</p>\n                    <p style=\"color: #aaa; margin-top: 10px;\">Total Savings: INR {int(savings):,}</p>\n                </div>\n                \n                <a href=\"{settings.frontend_url}/alerts\" style=\"display: inline-block; background-color: #10B981; color: #000; text-decoration: none; padding
-<truncated 931 bytes>
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+class EmailService:
+    def __init__(self):
+        self.smtp_server = "smtp.gmail.com"
+        self.smtp_port = 587
+        self.sender_email = "nikhilrkadam2005@gmail.com"
+        self.sender_password = "nwttopcqakidwqcm"
+
+    def send_price_drop_alert(self, recipient_email: str, property_title: str, original_price: float, new_price: float, target_price: float, property_url: str):
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = f"🚨 Price Drop Alert: {property_title}"
+            msg["From"] = f"Griha AI <{self.sender_email}>"
+            msg["To"] = recipient_email
+
+            # Formatting prices safely
+            orig_str = f"₹{original_price:.2f} L" if original_price < 100 else f"₹{original_price:.2f} Cr"
+            new_str = f"₹{new_price:.2f} L" if new_price < 100 else f"₹{new_price:.2f} Cr"
+            target_str = f"₹{target_price:.2f} L" if target_price < 100 else f"₹{target_price:.2f} Cr"
+
+            html = f"""
+            <html>
+              <body style="font-family: Arial, sans-serif; color: #1C1C1C; background-color: #FAF8F3; padding: 20px;">
+                <div style="max-w: 600px; margin: 0 auto; background-color: #FFFFFF; border: 1px solid #E5E0D8; border-radius: 10px; overflow: hidden;">
+                  <div style="background-color: #C9922A; padding: 20px; text-align: center;">
+                    <h1 style="color: #FFFFFF; margin: 0;">Griha AI Alert</h1>
+                  </div>
+                  <div style="padding: 30px;">
+                    <h2 style="color: #2D5016;">Great news! Price Dropped!</h2>
+                    <p>The price for <strong>{property_title}</strong> has dropped below your target.</p>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;">
+                      <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #E5E0D8;"><strong>Original Price:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #E5E0D8; text-align: right;">{orig_str}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #E5E0D8;"><strong>Your Target:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #E5E0D8; text-align: right; color: #C9922A;">{target_str}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px;"><strong>New Price:</strong></td>
+                        <td style="padding: 10px; text-align: right; color: #27AE60; font-weight: bold; font-size: 1.2em;">{new_str}</td>
+                      </tr>
+                    </table>
+                    <p style="text-align: center; margin-top: 30px;">
+                      <a href="{property_url}" style="background-color: #2D5016; color: #FFFFFF; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Property</a>
+                    </p>
+                  </div>
+                </div>
+              </body>
+            </html>
+            """
+            
+            part = MIMEText(html, "html")
+            msg.attach(part)
+
+            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
+            server.starttls()
+            server.login(self.sender_email, self.sender_password)
+            server.sendmail(self.sender_email, recipient_email, msg.as_string())
+            server.quit()
+            
+            print(f"✅ Alert email sent to {recipient_email} for {property_title}")
+            return True
+        except Exception as e:
+            print(f"❌ Failed to send email alert: {str(e)}")
+            return False

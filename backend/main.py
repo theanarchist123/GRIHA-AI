@@ -4,9 +4,8 @@ from contextlib import asynccontextmanager
 from database.connection import init_db
 from config import settings
 from api.routes import router as api_router
-
-# We will initialize the global scheduler here later
-# scheduler = AsyncIOScheduler()
+import asyncio
+from services.price_monitor import monitor_prices_loop
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,13 +13,14 @@ async def lifespan(app: FastAPI):
     print("Starting up Griha AI Backend...")
     await init_db()
     
-    # scheduler.start()
+    # Start background price monitor
+    price_monitor_task = asyncio.create_task(monitor_prices_loop())
     
     yield
     
     # Shutdown actions
     print("Shutting down Griha AI Backend...")
-    # scheduler.shutdown()
+    price_monitor_task.cancel()
 
 app = FastAPI(
     title="Griha AI API",

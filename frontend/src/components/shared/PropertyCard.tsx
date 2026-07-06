@@ -4,25 +4,34 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn, formatPrice } from "@/lib/utils";
 import { MapPin, Maximize2, Building2, AlertTriangle, Bookmark, Bell } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import type { Property } from "@/lib/mockData";
 
 interface PropertyCardProps {
   property: Property;
   className?: string;
+  isSavedToPipeline?: boolean;
+  isSavedToAlerts?: boolean;
 }
 
-export function PropertyCard({ property, className }: PropertyCardProps) {
+export function PropertyCard({ property, className, isSavedToPipeline = false, isSavedToAlerts = false }: PropertyCardProps) {
   const cleanName = (name?: string) => {
     if (!name) return undefined;
     const cleaned = name.trim().replace(/^(?:in|at|near|of)\s+/i, "").split(",")[0].trim();
     return cleaned.length >= 3 ? cleaned : undefined;
   };
   const cardTitle = cleanName(property.apartmentName) || cleanName(property.title) || `${property.bhk} in ${property.locality}`;
-  const cardInsight = (property.aiInsight || `${property.bhk} listing in ${property.locality}.`).replace(/\.{3,}\s*$/, ".").trim();
+  const cardInsight = (property.aiInsight || `${property.bhk} listing in ${property.locality}.`).replace(/\.{3,}\s*$/, "").trim();
 
-  const [savedToPipeline, setSavedToPipeline] = useState(false);
-  const [savedToAlerts, setSavedToAlerts] = useState(false);
+  const [savedToPipeline, setSavedToPipeline] = useState(isSavedToPipeline);
+  const [savedToAlerts, setSavedToAlerts] = useState(isSavedToAlerts);
+
+  useEffect(() => { setSavedToPipeline(isSavedToPipeline); }, [isSavedToPipeline]);
+  useEffect(() => { setSavedToAlerts(isSavedToAlerts); }, [isSavedToAlerts]);
+
+  const { user } = useUser();
+  const user_email = user?.primaryEmailAddress?.emailAddress || "guest@example.com";
 
   const handleSaveToPipeline = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,7 +46,8 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
           location: property.locality,
           price: formatPrice(property.price) + (property.priceType === "rent" ? "/mo" : ""),
           image: property.images[0] || "",
-          status: "shortlisted"
+          status: "shortlisted",
+          user_email: user_email
         })
       });
       if (res.ok) setSavedToPipeline(true);
@@ -50,6 +60,7 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
     e.preventDefault();
     if (savedToAlerts) return;
     try {
+      const user_email = user?.primaryEmailAddress?.emailAddress || "guest@example.com";
       const res = await fetch("http://localhost:10000/api/alerts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -59,6 +70,7 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
           location: property.locality,
           price: formatPrice(property.price) + (property.priceType === "rent" ? "/mo" : ""),
           image: property.images[0] || "",
+          user_email: user_email,
           type: property.bhk || "Property"
         })
       });

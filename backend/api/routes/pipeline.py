@@ -12,6 +12,7 @@ class PipelineItemCreate(BaseModel):
     price: str
     image: str
     status: str = "shortlisted"
+    user_email: str = "guest@example.com"
 
 class PipelineItemUpdate(BaseModel):
     status: str
@@ -21,8 +22,8 @@ async def add_to_pipeline(item: PipelineItemCreate, db = Depends(get_db)):
     try:
         pipeline_collection = db["pipeline"]
         
-        # Check if already exists
-        existing = await pipeline_collection.find_one({"property_id": item.property_id})
+        # Check if already exists for this user
+        existing = await pipeline_collection.find_one({"property_id": item.property_id, "user_email": item.user_email})
         if existing:
             return {"status": "success", "message": "Already in pipeline", "data": {"id": str(existing["_id"])}}
             
@@ -35,10 +36,11 @@ async def add_to_pipeline(item: PipelineItemCreate, db = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/")
-async def get_pipeline(db = Depends(get_db)):
+async def get_pipeline(user_email: Optional[str] = None, db = Depends(get_db)):
     try:
         pipeline_collection = db["pipeline"]
-        cursor = pipeline_collection.find({})
+        query = {"user_email": user_email} if user_email else {}
+        cursor = pipeline_collection.find(query)
         items = await cursor.to_list(length=100)
         
         # Group by status

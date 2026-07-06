@@ -24,6 +24,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 
 const ACTIVITY_ICONS: Record<string, { icon: typeof Home; color: string }> = {
   match: { icon: Home, color: "bg-forest text-white" },
@@ -139,6 +140,12 @@ export default function DashboardPage() {
   const [scrapeProgress, setScrapeProgress] = useState(0);
   const [scrapeStatus, setScrapeStatus] = useState("");
   const [scrapeFound, setScrapeFound] = useState(0);
+
+  const { user, isLoaded } = useUser();
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+
+  const [savedPipelineIds, setSavedPipelineIds] = useState<Set<string>>(new Set());
+  const [savedAlertIds, setSavedAlertIds] = useState<Set<string>>(new Set());
 
   const initialFilters = useMemo<DashboardSearchFilters>(() => {
     return {
@@ -346,7 +353,39 @@ export default function DashboardPage() {
         }
 
         setTopMatches(apiProperties.map(normalizeProperty));
-        setPipelineData({ shortlisted: [], underReview: [], negotiating: [], offerMade: [] });
+
+        // Fetch Pipeline & Alerts for logged-in user
+        if (userEmail) {
+          try {
+            const [plRes, alRes] = await Promise.all([
+              fetch(`http://localhost:10000/api/pipeline/?user_email=${encodeURIComponent(userEmail)}`),
+              fetch(`http://localhost:10000/api/alerts/?user_email=${encodeURIComponent(userEmail)}`)
+            ]);
+            if (plRes.ok) {
+              const plJson = await plRes.json();
+              if (plJson.data) {
+                setPipelineData(plJson.data);
+                const plIds = new Set<string>();
+                Object.values(plJson.data).forEach((arr: any) => {
+                  arr.forEach((item: any) => plIds.add(item.property_id));
+                });
+                setSavedPipelineIds(plIds);
+              }
+            }
+            if (alRes.ok) {
+              const alJson = await alRes.json();
+              if (alJson.data) {
+                setSavedAlertIds(new Set(alJson.data.map((item: any) => item.property_id)));
+              }
+            }
+          } catch (e) {
+            console.error("Failed to fetch pipeline/alerts", e);
+            setPipelineData({ shortlisted: [], underReview: [], negotiating: [], offerMade: [] });
+          }
+        } else {
+          setPipelineData({ shortlisted: [], underReview: [], negotiating: [], offerMade: [] });
+        }
+        
         setRecentActivity([]);
 
         // ============================================================
@@ -376,7 +415,9 @@ export default function DashboardPage() {
       }
     }
 
-    fetchData();
+    if (isLoaded) {
+      fetchData();
+    }
 
     return () => {
       isCancelled = true;
@@ -387,7 +428,7 @@ export default function DashboardPage() {
         clearTimeout(finishTimer);
       }
     };
-  }, [filters]);
+  }, [filters, isLoaded, userEmail]);
 
   const handleApplyFilters = (nextFilters: DashboardSearchFilters) => {
     setFilters(nextFilters);
@@ -496,7 +537,11 @@ export default function DashboardPage() {
                   transition={{ delay: i * 0.1, duration: 0.4 }}
                   className="shrink-0 snap-start"
                 >
-                  <PropertyCard property={property} />
+                  <PropertyCard 
+                    property={property} 
+                    isSavedToPipeline={savedPipelineIds.has(property.id)}
+                    isSavedToAlerts={savedAlertIds.has(property.id)}
+                  />
                 </motion.div>
               ))}
             </div>

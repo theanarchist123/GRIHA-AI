@@ -83,7 +83,7 @@ async def list_properties(
         conditions.append(query)
 
     final_query = {"$and": conditions} if len(conditions) > 1 else conditions[0]
-    properties = await Property.find(final_query).to_list()
+    properties = await Property.find(final_query).sort("-created_at").to_list()
     # Run enrichment in the background so we don't block the API response
     asyncio.create_task(_enrich_missing_card_content(properties))
     return {"status": "success", "data": properties}
@@ -119,9 +119,7 @@ async def search_properties(
     elif len(conditions) > 1:
         query = {"$and": conditions}
 
-    search_query = Property.find(query)
-    if bhk and bhk != "Any BHK":
-        search_query = search_query.sort([("price", -1)])
+    search_query = Property.find(query).sort("-created_at")
 
     results = await search_query.to_list()
 
@@ -135,7 +133,7 @@ async def search_properties(
         elif len(base_conditions) > 1:
             fallback_query = {"$and": base_conditions}
 
-        results = await Property.find(fallback_query).sort([("price", -1)]).to_list()
+        results = await Property.find(fallback_query).sort("-created_at").to_list()
         fallback_applied = True
 
     asyncio.create_task(_enrich_missing_card_content(results))

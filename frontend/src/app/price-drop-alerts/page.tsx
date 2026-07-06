@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { DashboardSidebar, DashboardTopBar } from "@/components/shared/Navbar";
-import { MapPin, Star, ChevronDown, RefreshCw, Trash2, Sparkles, TrendingDown } from "lucide-react";
+import { MapPin, Star, ChevronDown, RefreshCw, Trash2, Sparkles, TrendingDown, Bell } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
 type AlertItem = {
   id: string;
@@ -21,18 +22,28 @@ type AlertItem = {
 export default function PriceDropAlertsPage() {
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user, isLoaded } = useUser();
+  
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
 
   useEffect(() => {
-    fetchAlerts();
-  }, []);
+    if (isLoaded) {
+        fetchAlerts();
+    }
+  }, [isLoaded, userEmail]);
 
   const fetchAlerts = async () => {
+    if (!userEmail) {
+        setLoading(false);
+        return;
+    }
+    setLoading(true);
     try {
       let res;
       let retryCount = 0;
       while (retryCount < 3) {
         try {
-          res = await fetch("http://localhost:10000/api/alerts");
+          res = await fetch(`http://localhost:10000/api/alerts/?user_email=${encodeURIComponent(userEmail)}`);
           break;
         } catch (err) {
           retryCount++;
@@ -53,8 +64,9 @@ export default function PriceDropAlertsPage() {
   };
 
   const handleDelete = async (property_id: string) => {
+    if (!userEmail) return;
     try {
-      await fetch(`http://localhost:10000/api/alerts/${property_id}`, {
+      await fetch(`http://localhost:10000/api/alerts/${property_id}?user_email=${encodeURIComponent(userEmail)}`, {
         method: "DELETE"
       });
       fetchAlerts();
@@ -71,13 +83,56 @@ export default function PriceDropAlertsPage() {
 
         {/* Header */}
         <header className="px-6 py-6 flex items-center justify-between border-b border-border-custom bg-surface sticky top-0 z-10">
-          <div>
-            <h1 className="text-3xl font-playfair text-charcoal flex items-center gap-3">
-              Price Drop Alerts
-            </h1>
-            <p className="text-muted text-sm font-dm mt-1">Track discounted properties matching your preferences</p>
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <h1 className="text-3xl font-playfair text-charcoal flex items-center gap-3">
+                Price Drop Alerts
+              </h1>
+              <p className="text-muted text-sm font-dm mt-1">
+                {alerts.filter(a => a.status !== "triggered").length} watching · {alerts.filter(a => a.status === "triggered").length} triggered
+              </p>
+            </div>
+            <button onClick={fetchAlerts} className="px-4 py-2 border border-border-custom rounded-xl font-dm text-sm font-bold flex items-center gap-2 hover:bg-cream transition-colors">
+              <RefreshCw size={14} /> Check All Prices
+            </button>
           </div>
         </header>
+
+        {/* Stats Row */}
+        <div className="px-6 py-4 flex gap-4 border-b border-border-custom bg-surface">
+            <div className="flex-1 bg-warm-gold/10 p-4 rounded-xl flex items-center gap-4">
+                <div className="p-3 bg-white rounded-full shadow-sm text-warm-gold">
+                    <Bell size={20} />
+                </div>
+                <div>
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Active Alerts</p>
+                    <p className="text-2xl font-bold text-warm-gold">{alerts.filter(a => a.status !== "triggered").length}</p>
+                </div>
+            </div>
+            <div className="flex-1 bg-forest/10 p-4 rounded-xl flex items-center gap-4">
+                <div className="p-3 bg-white rounded-full shadow-sm text-forest">
+                    <TrendingDown size={20} />
+                </div>
+                <div>
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Potential Savings</p>
+                    <p className="text-2xl font-bold text-forest">
+                      ₹{alerts.reduce((acc, curr) => {
+                          const save = parseFloat(curr.saveAmount.replace(/[^\d.]/g, ''));
+                          return acc + (isNaN(save) ? 0 : save);
+                      }, 0).toFixed(1)} {alerts.length > 0 && alerts[0].saveAmount.includes("Cr") ? "Cr" : "L"}
+                    </p>
+                </div>
+            </div>
+            <div className="flex-1 bg-charcoal/5 p-4 rounded-xl flex items-center gap-4">
+                <div className="p-3 bg-white rounded-full shadow-sm text-charcoal">
+                    <Star size={20} />
+                </div>
+                <div>
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Triggered</p>
+                    <p className="text-2xl font-bold text-charcoal">{alerts.filter(a => a.status === "triggered").length}</p>
+                </div>
+            </div>
+        </div>
 
         {/* List Board */}
         <main className="flex-1 p-6 bg-cream">
@@ -144,10 +199,19 @@ export default function PriceDropAlertsPage() {
                     </div>
                     
                     {/* Bottom Row */}
-                    <div className="px-4 py-2 bg-surface/50 border-t border-border-custom flex items-center justify-between">
+                    <div className={`px-4 py-2 border-t flex items-center justify-between ${alert.status === "triggered" ? "bg-green-50 border-forest/20" : "bg-surface/50 border-border-custom"}`}>
                       <div className="flex items-center gap-2">
-                        <span className="text-warm-gold text-xs">→</span>
-                        <span className="text-xs font-bold text-muted font-dm">Stable</span>
+                        {alert.status === "triggered" ? (
+                          <>
+                            <TrendingDown size={14} className="text-forest" />
+                            <span className="text-xs font-bold text-forest font-dm uppercase tracking-wider">Triggered</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-warm-gold text-xs">→</span>
+                            <span className="text-xs font-bold text-muted font-dm uppercase tracking-wider">Stable</span>
+                          </>
+                        )}
                       </div>
                       
                       <div className="flex items-center gap-4 text-xs font-dm text-muted">
