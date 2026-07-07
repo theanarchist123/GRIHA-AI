@@ -36,8 +36,8 @@ class NegotiationAgent:
     def __init__(self):
         if settings.gemini_api_key:
             genai.configure(api_key=settings.gemini_api_key)
-        self.model_pro = genai.GenerativeModel("gemini-3-flash-preview")
-        self.model_flash = genai.GenerativeModel("gemini-3-flash-preview")
+        self.model_pro = genai.GenerativeModel("gemini-3.5-flash")
+        self.model_flash = genai.GenerativeModel("gemini-3.5-flash")
 
     # ──────────────── Phase 1: Market Research ────────────────
 
@@ -140,7 +140,7 @@ Write a natural, conversational message (3-5 sentences). Include:
 Do NOT use any markdown formatting. Write as a plain WhatsApp/SMS message.
 """
         try:
-            response = self.model_pro.generate_content(prompt)
+            response = await self.model_pro.generate_content_async(prompt)
             return response.text.strip()
         except Exception as e:
             print(f"[NegotiationAgent] Gemini error in opening: {e}")
@@ -188,7 +188,7 @@ Analyze and respond in this EXACT JSON format:
 Return ONLY valid JSON, no markdown.
 """
         try:
-            response = self.model_flash.generate_content(prompt)
+            response = await self.model_flash.generate_content_async(prompt)
             text = response.text.strip()
             if text.startswith("```"):
                 text = text.split("\n", 1)[1] if "\n" in text else text
@@ -267,7 +267,7 @@ Tone: {tone_map.get(tone, tone_map['balanced'])}
 Write a natural response (2-4 sentences). Reference the broker's last message. State the new offer clearly. No markdown.
 """
         try:
-            response = self.model_pro.generate_content(prompt)
+            response = await self.model_pro.generate_content_async(prompt)
             message_text = response.text.strip()
         except Exception:
             message_text = (

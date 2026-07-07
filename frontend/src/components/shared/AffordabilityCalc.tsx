@@ -92,6 +92,8 @@ export function AffordabilityCalc({ rentAmount, city }: AffordabilityCalcProps) 
         <div className="relative">
           <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
+            id="monthly-income"
+            name="monthly-income"
             type="text"
             value={income ? income.toLocaleString("en-IN") : ""}
             onChange={handleIncomeChange}

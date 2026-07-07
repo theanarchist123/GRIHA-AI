@@ -159,6 +159,8 @@ export default function DocumentsPage() {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                 <input
+                  id="documents-search"
+                  name="documents-search"
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -295,11 +297,12 @@ export default function DocumentsPage() {
             }`}
           >
             <input
+              id="file-upload"
+              name="file-upload"
               type="file"
               accept=".pdf,.jpg,.jpeg,.png,.webp"
               onChange={handleFileSelect}
               className="hidden"
-              id="file-upload"
             />
             <label htmlFor="file-upload" className="cursor-pointer">
               {uploading ? (

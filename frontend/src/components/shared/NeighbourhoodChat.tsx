@@ -133,6 +133,8 @@ export default function NeighbourhoodChat({ propertyId, onUpdateMap }: Neighbour
       <div className="p-4 bg-dark-bg/50 border-t border-dark-border">
         <div className="relative">
           <input
+            id="chat-input"
+            name="chat-input"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}

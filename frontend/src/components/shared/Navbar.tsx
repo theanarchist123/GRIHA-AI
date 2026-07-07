@@ -46,7 +46,7 @@ export function DashboardSidebar() {
     : "Set location and BHK to personalize matches";
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[260px] bg-surface border-r border-border-custom flex flex-col z-40">
+    <aside className="fixed left-0 top-0 bottom-0 w-[260px] bg-surface border-r border-border-custom flex flex-col z-40">
       {/* Logo */}
       <div className="px-6 py-6">
         <Link href="/" className="flex items-center gap-1">

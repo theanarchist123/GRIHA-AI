@@ -29,8 +29,8 @@ class ContractAgent:
     def __init__(self):
         if settings.gemini_api_key:
             genai.configure(api_key=settings.gemini_api_key)
-        self.model_flash = genai.GenerativeModel("gemini-3-flash-preview")
-        self.model_pro = genai.GenerativeModel("gemini-3-flash-preview")
+        self.model_flash = genai.GenerativeModel("gemini-3.5-flash")
+        self.model_pro = genai.GenerativeModel("gemini-3.5-flash")
 
     # ──────────────── Text Extraction ────────────────
 
@@ -92,8 +92,8 @@ class ContractAgent:
             import io
             
             img = PIL.Image.open(io.BytesIO(file_bytes))
-            model = genai.GenerativeModel("gemini-3-flash-preview")
-            response = model.generate_content([
+            model = genai.GenerativeModel("gemini-3.5-flash")
+            response = await model.generate_content_async([
                 "Extract all text from this document image. Return the raw text only, preserving the original structure as much as possible.",
                 img,
             ])
@@ -119,7 +119,7 @@ Return a JSON array where each item has:
 Return ONLY valid JSON array. No markdown formatting.
 """
         try:
-            response = self.model_flash.generate_content(prompt)
+            response = await self.model_flash.generate_content_async(prompt)
             raw = response.text.strip()
             if raw.startswith("```"):
                 raw = raw.split("\n", 1)[1] if "\n" in raw else raw
@@ -176,7 +176,7 @@ Return a JSON array:
 Return ONLY valid JSON. No markdown.
 """
             try:
-                response = self.model_pro.generate_content(prompt)
+                response = await self.model_pro.generate_content_async(prompt)
                 raw = response.text.strip()
                 if raw.startswith("```"):
                     raw = raw.split("\n", 1)[1] if "\n" in raw else raw
@@ -220,7 +220,7 @@ Analysis results: {high_risk_count} high-risk clauses, {caution_count} caution c
 Be specific about key terms (rent amount, deposit, lock-in period, escalation clause, etc.)
 """
         try:
-            response = self.model_flash.generate_content(prompt)
+            response = await self.model_flash.generate_content_async(prompt)
             return response.text.strip()
         except Exception:
             return f"Document analyzed: {len(clause_analysis)} clauses found. {high_risk_count} high-risk, {caution_count} caution items."
@@ -303,7 +303,7 @@ Return JSON with relevant fields:
 Return ONLY valid JSON. Use null for unknown fields.
 """
         try:
-            response = self.model_flash.generate_content(prompt)
+            response = await self.model_flash.generate_content_async(prompt)
             raw = response.text.strip()
             if raw.startswith("```"):
                 raw = raw.split("\n", 1)[1] if "\n" in raw else raw
@@ -347,7 +347,7 @@ Provide a clear, specific answer. Reference the specific document and clause whe
 If the answer is not in the documents, say so clearly.
 """
         try:
-            response = self.model_pro.generate_content(prompt)
+            response = await self.model_pro.generate_content_async(prompt)
             answer = response.text.strip()
             
             # Find which documents were referenced
@@ -383,7 +383,7 @@ Focus strictly on the outcomes:
 Be concise and use a bulleted list. If a term was not discussed, do not invent it.
 """
         try:
-            response = self.model_flash.generate_content(prompt)
+            response = await self.model_flash.generate_content_async(prompt)
             return response.text.strip()
         except Exception as e:
             print(f"[ContractAgent] Transcript summary error: {e}")

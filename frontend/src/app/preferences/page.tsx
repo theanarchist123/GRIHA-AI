@@ -175,6 +175,8 @@ export default function PreferencesPage() {
                           {editingField === pref.key ? (
                             <div className="mt-2">
                               <input
+                                id={`pref-${pref.key}`}
+                                name={`pref-${pref.key}`}
                                 type="text"
                                 value={editValue}
                                 onChange={(e) => setEditValue(e.target.value)}

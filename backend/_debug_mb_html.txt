@@ -1,0 +1,248 @@
+
+
+
+<!DOCTYPE html>
+
+
+	
+	
+		      <html lang="en">
+		    
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+ 	<title >
+		
+		    
+		       2 BHK Flats for Rent near Vangaon, Palghar -  2 BHK Flats / Apartments on Rent near Vangaon, Palghar
+		    
+		    
+		
+	</title>
+	
+	<link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+	<link href="https://cdn.staticmb.com" rel="preconnect" crossorigin>
+	<link href="https://img.staticmb.com" rel="preconnect" crossorigin>
+	<!-- <link href="https://www.googletagmanager.com" rel="preconnect" crossorigin>
+	<link href="https://www.google-analytics.com" rel="preconnect" crossorigin> -->
+
+	<link rel="shortcut icon" href="https://cdn.staticmb.com/images/favicon.ico">
+	
+		<meta name="description" content="Are you searching 2 BHK Flat for rent near Vangaon, Palghar? Choose from  2 BHK flats/apartments for rent near Vangaon by Price, Furnishing, Availability, No Brokerage options.">
+	
+
+	
+
+	<script type="application/ld+json">
+	{"@context":"https://schema.org","@type":"ItemList","url":"https://www.magicbricks.comnull","name":"2 BHK Flats for Rent near Vangaon, Palghar","numberOfItems":0,"itemListElement":[]}
+	</script>
+	<script type="application/ld+json">
+	
+	[]
+	
+	</script>
+	<script type="application/ld+json">
+	
+	</script>
+	<script type="application/ld+json">
+		{
+		  "@context": "https://schema.org",
+		  "@type": "Organization",
+		  "name": "Magicbricks Realty Services Limited",
+		  "url": "https://www.magicbricks.com/",
+		  "logo":{"@type":"ImageObject","url":"https://img.staticmb.com/mbimages/appimages/mailers/mb-logo-web.webp","width":600,"height":60},
+		  "sameAs": [
+				"https://www.facebook.com/magicbricks",
+				"https://www.twitter.com/magicbricks",
+				"https://www.youtube.com/user/magicbricksvideo",
+				"https://www.linkedin.com/company/magicbricks/"
+			],
+		  "address": {
+			"@type": "PostalAddress",
+			"streetAddress": "Magicbricks Realty Services Limited (magicbricks.com), Times Centre (Digital Content Production Facility),FC - 6, (Third Floor), Sector 16 A, Film City",
+			"addressLocality": "Noida",
+			"addressRegion": "India",
+			"postalCode": "201301"
+			},
+			"contactPoint" : [
+			{ "@type" : "ContactPoint",
+			  "telephone": "+91 120-6866600",
+			  "contactType" : "Customer Service",
+			  "areaServed" : "India"
+			} ]
+		}
+		</script>
+		 
+
+	
+
+	
+	
+
+
+	
+
+	
+		<link rel="manifest" href="https://www.magicbricks.com/manifest.json">
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- SEO-6522 -->
+
+
+
+
+
+
+
+
+
+
+<!-- no index , no follow tag start -->
+
+
+<!-- no index , no follow tag end -->
+	
+
+
+
+
+
+
+
+
+
+
+		<!-- self canonical start -->
+		
+		
+	
+	
+	
+		
+		
+		
+		
+			
+			
+			
+				<link rel="canonical" href="https://www.magicbricks.com/property-for-rent" />
+			
+			
+		
+			
+	
+	
+		<!-- Multilingual alternate urls case  -->
+		  
+		
+			
+			
+ 		    
+		 
+		
+		<!-- Multilingual alternate urls case  -->
+
+		<!-- India urls case  -->
+		
+			
+
+		
+
+		
+		<!-- self canonical end -->
+	
+
+
+
+
+<!-- follow,no index handling start -->
+
+
+
+<!-- follow,no index handling end -->
+
+
+
+	
+		
+			
+				
+		 
+		
+
+
+
+
+<!-- rel = next/prev handling start -->
+	
+<!-- rel = next/prev handling end -->
+ 
+
+	
+
+
+
+
+
+
+
+
+
+
+	
+	<style type="text/css">
+		@font-face {
+			font-family: 'Montserrat';
+			font-style: normal;
+			font-weight: 400;
+			font-display: block;
+			src: url(https://fonts.gstatic.com/s/montserrat/v25/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2) format('woff2');
+			unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+		}
+
+		@font-face {
+			font-family: 'Montserrat';
+			font-style: normal;
+			font-weight: 500;
+			font-display: block;
+			src: url(https://fonts.gstatic.com/s/montserrat/v25/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2) format('woff2');
+			unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+		}
+
+		@font-face {
+			font-family: 'Montserrat';
+			font-style: normal;
+			font-weight: 600;
+			font-display: block;
+			src: url(https://fonts.gstatic.com/s/montserrat/v25/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2) format('woff2');
+			unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+		}
+	</style>
+
+	
+		
+		
+		
+			<style type="text/css">
+				
+				.webkit__scroll-autosuggest::-webkit-scrollbar{background-color:rgba(0,0,0,.04);border-radius:2px;width:4px}.webkit__scroll-autosuggest::-webkit-scrollbar-thumb{background-color:#d8d8d8;border-radius:2px;-webkit-box-shadow:inset 0 0 6px rgba(0,0,0,.2);box-shadow:inset 0 0 6px rgba(0,0,0,.2);width:4px}.auto-suggest{position:relative}.auto-suggest__tag-wrap{padding:7px 0 0}.auto-suggest__tag-wrap.tag-added{position:relative;z-index:1}.auto-suggest__tag-wrap.forFlexView{displ

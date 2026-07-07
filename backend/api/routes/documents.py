@@ -5,7 +5,7 @@ import os
 import uuid
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from bson import ObjectId
 from database.models.document import DocumentModel
 from database.models.user import User

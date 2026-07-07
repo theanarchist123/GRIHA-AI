@@ -35,13 +35,6 @@ const ACTIVITY_ICONS: Record<string, { icon: typeof Home; color: string }> = {
   system: { icon: CheckCircle, color: "bg-charcoal text-white" },
 };
 
-const PIPELINE_COLUMNS = [
-  { key: "shortlisted" as const, label: "Shortlisted", color: "bg-forest" },
-  { key: "underReview" as const, label: "Under Review", color: "bg-warm-gold" },
-  { key: "negotiating" as const, label: "Negotiating", color: "bg-blue-500" },
-  { key: "offerMade" as const, label: "Offer Made", color: "bg-success" },
-];
-
 function buildCardSummaryFromRaw(raw: any): string {
   const bhk = typeof raw?.bhk === "string" ? raw.bhk : "Home";
   const apartmentName = raw?.apartment_name || raw?.apartmentName || raw?.title || "this project";
@@ -368,12 +361,13 @@ export default function DashboardPage() {
 
         setTopMatches(apiProperties.map(normalizeProperty));
 
-        // Fetch Pipeline & Alerts for logged-in user
+        // Fetch Pipeline & Alerts & Activity for logged-in user
         if (userEmail) {
           try {
-            const [plRes, alRes] = await Promise.all([
+            const [plRes, alRes, actRes] = await Promise.all([
               fetch(`http://localhost:10000/api/pipeline/?user_email=${encodeURIComponent(userEmail)}`),
-              fetch(`http://localhost:10000/api/alerts/?user_email=${encodeURIComponent(userEmail)}`)
+              fetch(`http://localhost:10000/api/alerts/?user_email=${encodeURIComponent(userEmail)}`),
+              user?.id ? fetch(`http://localhost:10000/api/activity/?clerk_id=${encodeURIComponent(user.id)}`) : Promise.resolve(null)
             ]);
             if (plRes.ok) {
               const plJson = await plRes.json();
@@ -392,15 +386,23 @@ export default function DashboardPage() {
                 setSavedAlertIds(new Set(alJson.data.map((item: any) => item.property_id)));
               }
             }
+            if (actRes && actRes.ok) {
+              const actJson = await actRes.json();
+              if (actJson.data) {
+                setRecentActivity(actJson.data);
+              }
+            } else {
+              setRecentActivity([]);
+            }
           } catch (e) {
-            console.error("Failed to fetch pipeline/alerts", e);
+            console.error("Failed to fetch dashboard user data:", e);
             setPipelineData({ shortlisted: [], underReview: [], negotiating: [], offerMade: [] });
+            setRecentActivity([]);
           }
         } else {
           setPipelineData({ shortlisted: [], underReview: [], negotiating: [], offerMade: [] });
+          setRecentActivity([]);
         }
-        
-        setRecentActivity([]);
 
         // ============================================================
         // AUTO-TRIGGER SCRAPING when location is set but 0 DB results
@@ -596,61 +598,35 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {/* Pipeline Kanban */}
+          {/* Quick Glance */}
           <section id="pipeline">
-            <h2 className="font-playfair text-2xl text-charcoal mb-4">Pipeline</h2>
-            {!loading && pipelineData && (
-              <div className="overflow-x-auto pb-4 -mx-2 px-2 scrollbar-thin">
-                <div className="flex gap-4 min-w-[1000px] lg:grid lg:grid-cols-4 lg:min-w-0">
-                {PIPELINE_COLUMNS.map((col) => {
-                  const items = pipelineData[col.key] || [];
-                  return (
-                    <div key={col.key} className="bg-surface rounded-xl border border-border-custom p-4">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className={`w-2.5 h-2.5 rounded-full ${col.color}`} />
-                        <h3 className="font-dm font-semibold text-charcoal text-sm">{col.label}</h3>
-                        <span className="ml-auto text-xs bg-cream px-2 py-0.5 rounded-full text-muted">
-                          {items.length}
-                        </span>
-                      </div>
-                      <div className="space-y-3">
-                        {items.length === 0 && (
-                          <div className="text-center py-4 text-xs font-dm text-muted">No items</div>
-                        )}
-                        {items.map((prop: any) => (
-                          <Link
-                            key={prop.id || prop._id}
-                            href={`/property/${prop.id || prop._id}`}
-                            className="block bg-cream rounded-lg p-3 hover:shadow-md transition-shadow"
-                          >
-                            <div className="flex gap-3">
-                              <img
-                                src={prop.images?.[0] || ""}
-                                alt={prop.address || "Property"}
-                                className="w-14 h-14 rounded-lg object-cover shrink-0"
-                              />
-                              <div className="min-w-0">
-                                <p className="font-dm font-semibold text-charcoal text-xs truncate">
-                                  {prop.bhk}, {prop.locality}
-                                </p>
-                                <p className="text-forest font-bold text-sm mt-0.5">
-                                  {formatPrice(prop.price)}/mo
-                                </p>
-                                <p className="text-muted text-[10px] mt-1 truncate italic">
-                                  {prop.aiInsight ? prop.aiInsight.slice(0, 50) + "..." : ""}
-                                </p>
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
+            <h2 className="font-playfair text-2xl text-charcoal mb-4">Quick Glance</h2>
+            {!loading && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-surface rounded-xl border border-border-custom p-6 flex flex-col items-center justify-center text-center">
+                  <div className="w-12 h-12 bg-forest/10 rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle className="w-6 h-6 text-forest" />
+                  </div>
+                  <h3 className="font-dm font-bold text-3xl text-charcoal mb-1">{savedPipelineIds.size}</h3>
+                  <p className="font-dm text-muted text-sm">Listings Saved to Pipeline</p>
+                </div>
+                <div className="bg-surface rounded-xl border border-border-custom p-6 flex flex-col items-center justify-center text-center">
+                  <div className="w-12 h-12 bg-warm-gold/10 rounded-full flex items-center justify-center mb-4">
+                    <MessageSquare className="w-6 h-6 text-warm-gold" />
+                  </div>
+                  <h3 className="font-dm font-bold text-3xl text-charcoal mb-1">{pipelineData?.negotiating?.length || 0}</h3>
+                  <p className="font-dm text-muted text-sm">Active Negotiations</p>
+                </div>
+                <div className="bg-surface rounded-xl border border-border-custom p-6 flex flex-col items-center justify-center text-center">
+                  <div className="w-12 h-12 bg-orange-500/10 rounded-full flex items-center justify-center mb-4">
+                    <Bell className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <h3 className="font-dm font-bold text-3xl text-charcoal mb-1">{savedAlertIds.size}</h3>
+                  <p className="font-dm text-muted text-sm">Price Alerts Subscribed</p>
+                </div>
               </div>
-            </div>
-          )}
-        </section>
+            )}
+          </section>
         </div>
       </div>
 

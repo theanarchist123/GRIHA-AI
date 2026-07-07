@@ -5,7 +5,11 @@ from database.connection import init_db
 from config import settings
 from api.routes import router as api_router
 import asyncio
+import sys
 from services.price_monitor import monitor_prices_loop
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

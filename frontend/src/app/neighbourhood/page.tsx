@@ -131,6 +131,8 @@ export default function NeighbourhoodDashboardIndex() {
         <div className="relative w-full max-w-2xl">
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-icon" />
           <input 
+            id="neighbourhood-search"
+            name="neighbourhood-search"
             type="text" 
             placeholder="Filter by locality, BHK.."
             value={searchQuery}

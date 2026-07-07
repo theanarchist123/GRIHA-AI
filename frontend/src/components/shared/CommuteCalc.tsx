@@ -1,18 +1,27 @@
 "use client";
+// Force webpack recompile
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Map, Car, Train, Loader2, ArrowRight } from "lucide-react";
 
 interface CommuteCalcProps {
   propertyAddress: string;
   propertyCity: string;
+  selectedDestination?: string;
 }
 
-export function CommuteCalc({ propertyAddress, propertyCity }: CommuteCalcProps) {
-  const [destination, setDestination] = useState("");
+export function CommuteCalc({ propertyAddress, propertyCity, selectedDestination }: CommuteCalcProps) {
+  const [destination, setDestination] = useState(selectedDestination || "");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // If the parent passes a new destination (e.g. from a map click), update the input box
+  useEffect(() => {
+    if (selectedDestination) {
+      setDestination(selectedDestination);
+    }
+  }, [selectedDestination]);
 
   const calculateCommute = async () => {
     if (!destination.trim()) return;
@@ -51,6 +60,8 @@ export function CommuteCalc({ propertyAddress, propertyCity }: CommuteCalcProps)
         <label className="block text-xs font-dm font-semibold text-muted mb-2">Workplace or Frequent Destination</label>
         <div className="flex gap-3">
           <input
+            id="commute-destination"
+            name="commute-destination"
             type="text"
             value={destination}
             onChange={(e) => setDestination(e.target.value)}

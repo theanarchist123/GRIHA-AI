@@ -202,36 +202,33 @@ async def get_move_in_cost(property_id: str):
         }
     }
 
+from services.neighbourhood_chat_agent import NeighbourhoodChatAgent
+chat_agent = NeighbourhoodChatAgent()
+
 import httpx
 
 @router.get("/commute/calculate")
 async def calculate_commute(origin: str, destination: str):
-    """Calculate commute using Nominatim for geocoding and OSRM for routing."""
+    """Calculate commute using robust geocoding and OSRM for routing."""
     async with httpx.AsyncClient(verify=False) as client:
-        # Geocode origin
+        # Geocode origin using our robust agent
         try:
-            orig_res = await client.get(
-                "https://nominatim.openstreetmap.org/search",
-                params={"q": origin, "format": "json", "limit": 1},
-                headers={"User-Agent": "GrihaAI/1.0"}
-            )
-            orig_data = orig_res.json()
-            if not orig_data:
+            orig_lat, orig_lon = await chat_agent.geocode_address(origin)
+            if not orig_lat or not orig_lon:
                 return {"status": "error", "message": "Could not find origin location"}
-            orig_lat, orig_lon = float(orig_data[0]["lat"]), float(orig_data[0]["lon"])
+        except Exception:
+            return {"status": "error", "message": "Could not find origin location"}
             
-            # Geocode destination
-            dest_res = await client.get(
-                "https://nominatim.openstreetmap.org/search",
-                params={"q": destination, "format": "json", "limit": 1},
-                headers={"User-Agent": "GrihaAI/1.0"}
-            )
-            dest_data = dest_res.json()
-            if not dest_data:
+        # Geocode destination using our robust agent
+        try:
+            dest_lat, dest_lon = await chat_agent.geocode_address(destination)
+            if not dest_lat or not dest_lon:
                 return {"status": "error", "message": "Could not find destination location"}
-            dest_lat, dest_lon = float(dest_data[0]["lat"]), float(dest_data[0]["lon"])
+        except Exception:
+            return {"status": "error", "message": "Could not find destination location"}
             
-            # Get route from OSRM
+        # Get route from OSRM
+        try:
             osrm_url = f"http://router.project-osrm.org/route/v1/driving/{orig_lon},{orig_lat};{dest_lon},{dest_lat}?overview=false"
             route_res = await client.get(osrm_url)
             route_data = route_res.json()

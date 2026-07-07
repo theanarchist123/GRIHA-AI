@@ -88,6 +88,8 @@ END:VCALENDAR`;
                   <div className="relative">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                     <input
+                      id="visit-date"
+                      name="visit-date"
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
@@ -100,6 +102,8 @@ END:VCALENDAR`;
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                     <input
+                      id="visit-time"
+                      name="visit-time"
                       type="time"
                       value={time}
                       onChange={(e) => setTime(e.target.value)}

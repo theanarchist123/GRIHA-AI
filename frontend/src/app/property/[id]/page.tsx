@@ -26,6 +26,8 @@ import { CommuteCalc } from "@/components/shared/CommuteCalc";
 import { SocietyReviews } from "@/components/shared/SocietyReviews";
 import { STATIC_IMAGES } from "@/lib/unsplash";
 
+import { PropertyMap } from "@/components/shared/PropertyMap";
+
 function parseId(value: unknown): string | null {
   if (typeof value === "string") return value;
   if (value && typeof value === "object" && "$oid" in value) {
@@ -211,6 +213,7 @@ export default function PropertyDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [selectedDestination, setSelectedDestination] = useState<string>("");
 
   useEffect(() => {
     let cancelled = false;
@@ -381,7 +384,13 @@ export default function PropertyDetailPage() {
 
           <AffordabilityCalc rentAmount={property.price} city={property.city} />
           <MoveInCostBreakdown propertyId={property.id} />
-          <CommuteCalc propertyAddress={property.address || property.locality} propertyCity={property.city} />
+          <CommuteCalc 
+            propertyAddress={property.address || property.locality} 
+            propertyCity={property.city} 
+            selectedDestination={selectedDestination}
+          />
+          <PropertyMap propertyId={property.id} onMarkerClick={setSelectedDestination} />
+          
           <SocietyReviews propertyId={property.id} />
           
           <section className="bg-surface rounded-2xl border border-border-custom p-5">

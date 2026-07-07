@@ -20,10 +20,10 @@ from config import settings
 
 # Ordered list of models to try — if the primary hits its quota, try the next
 GEMINI_MODELS = [
+    "gemini-3.5-flash",
     "gemini-2.5-flash",
     "gemini-2.5-flash-lite",
     "gemini-2.0-flash",
-    "gemini-3-flash-preview",
     "gemini-flash-latest",
 ]
 

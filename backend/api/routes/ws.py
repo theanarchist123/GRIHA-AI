@@ -37,6 +37,11 @@ manager = ConnectionManager()
 @router.websocket("/scrape-progress/{client_id}")
 async def scrape_progress(websocket: WebSocket, client_id: str):
     await manager.connect(websocket)
+    
+    # Track active scraping task so we can cancel on disconnect
+    scrape_task: asyncio.Task | None = None
+    keepalive_task: asyncio.Task | None = None
+    
     try:
         while True:
             data = await websocket.receive_text()
@@ -57,6 +62,8 @@ async def scrape_progress(websocket: WebSocket, client_id: str):
                         await scraper.run_scrape_workflow(location, bhk)
                     except WebSocketDisconnect:
                         pass  # Client left, that's fine
+                    except asyncio.CancelledError:
+                        pass  # Task was cancelled, that's fine
                     except Exception as e:
                         # Try to notify the client of the error
                         try:
@@ -68,9 +75,44 @@ async def scrape_progress(websocket: WebSocket, client_id: str):
                         except Exception:
                             pass
 
-                asyncio.create_task(_run_scrape())
+                # Send keepalive pings to prevent WebSocket timeout during long scrapes
+                async def _keepalive():
+                    try:
+                        while True:
+                            await asyncio.sleep(10)
+                            try:
+                                await websocket.send_text(json.dumps({
+                                    "type": "ping",
+                                    "keepalive": True,
+                                }))
+                            except Exception:
+                                break
+                    except asyncio.CancelledError:
+                        pass
+
+                # Cancel any previous tasks
+                if scrape_task and not scrape_task.done():
+                    scrape_task.cancel()
+                if keepalive_task and not keepalive_task.done():
+                    keepalive_task.cancel()
+
+                keepalive_task = asyncio.create_task(_keepalive())
+                scrape_task = asyncio.create_task(_run_scrape())
+                
+                # When scrape finishes, stop keepalive
+                def _on_scrape_done(task):
+                    if keepalive_task and not keepalive_task.done():
+                        keepalive_task.cancel()
+                scrape_task.add_done_callback(_on_scrape_done)
 
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        pass
     except Exception:
+        pass
+    finally:
+        # Cleanup
+        if scrape_task and not scrape_task.done():
+            scrape_task.cancel()
+        if keepalive_task and not keepalive_task.done():
+            keepalive_task.cancel()
         manager.disconnect(websocket)

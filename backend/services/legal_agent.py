@@ -24,7 +24,7 @@ class LegalAgent:
     def __init__(self):
         if settings.gemini_api_key:
             genai.configure(api_key=settings.gemini_api_key)
-        self.model = genai.GenerativeModel("gemini-3-flash-preview")
+        self.model = genai.GenerativeModel("gemini-3.5-flash")
 
     async def analyze_property(self, property_doc: Property, user_id: Optional[str] = None) -> LegalReport:
         """
@@ -144,13 +144,14 @@ Respond in this EXACT JSON format:
         }}
     ],
     "key_risks": ["List of specific risks identified"],
-    "recommendations": ["List of specific recommendations for the buyer/tenant"]
+    "recommendations": ["List of specific recommendations for the buyer/tenant"],
+    "summary": "A 3-sentence plain English legal summary for a property tenant/buyer. Start with the overall verdict. Be direct and actionable. Use simple language."
 }}
 
 Return ONLY valid JSON, no markdown formatting.
 """
         try:
-            response = self.model.generate_content(prompt)
+            response = await self.model.generate_content_async(prompt)
             return response.text
         except Exception as e:
             print(f"[LegalAgent] Gemini error: {e}")
@@ -207,22 +208,14 @@ Return ONLY valid JSON, no markdown formatting.
         return "clean"
 
     async def _generate_summary(self, parsed: Dict[str, Any], risk: str, prop: Property) -> str:
-        """Generate a plain-English summary using Gemini."""
+        """Generate a plain-English summary based on the parsed JSON."""
         risk_map = {"clean": "CLEAN", "caution": "CAUTION", "high_risk": "HIGH RISK"}
-        prompt = f"""Write a 3-sentence plain English legal summary for a property tenant/buyer.
-
-Property: {prop.bhk} in {prop.locality}, {prop.city}
-Overall Risk: {risk_map.get(risk, 'UNKNOWN')}
-RERA: {parsed.get('rera', {}).get('status', 'Unknown')} — {parsed.get('rera', {}).get('details', '')}
-Encumbrance: {parsed.get('encumbrance', {}).get('status', 'Unknown')} — {parsed.get('encumbrance', {}).get('details', '')}
-Property Tax: {parsed.get('property_tax', {}).get('status', 'Unknown')} — {parsed.get('property_tax', {}).get('details', '')}
-Builder: {parsed.get('builder_track_record', {}).get('status', 'Unknown')} — {parsed.get('builder_track_record', {}).get('details', '')}
-
-Start with the overall verdict. Be direct and actionable. Use simple language.
-"""
         try:
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
+            summary = parsed.get("summary")
+            if summary:
+                return f"[{risk_map.get(risk, 'UNKNOWN')}] {summary}"
+            else:
+                raise ValueError("No summary returned in JSON")
         except Exception:
             verdicts = {
                 "clean": f"This property has a clean legal standing. Safe to proceed with {prop.bhk} in {prop.locality}.",

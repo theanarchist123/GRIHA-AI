@@ -45,6 +45,48 @@ async def chat_with_neighbourhood(req: ChatRequest):
     except Exception as e:
         raise HTTPException(500, f"Chat failed: {str(e)}")
 
+@router.get("/amenities/{property_id}")
+async def get_nearby_amenities(property_id: str):
+    """Fetch nearby amenities for map markers."""
+    try:
+        # Convert string to ObjectId for Beanie lookup
+        prop = await Property.get(ObjectId(property_id))
+    except Exception:
+        prop = await Property.find_one(Property.external_id == property_id)
+        
+    if not prop:
+        raise HTTPException(404, "Property not found")
+        
+    address = prop.address if prop.address else f"{prop.locality}, {prop.city}"
+    
+    try:
+        lat, lng = await chat_agent.geocode_address(address)
+        
+        categories = {
+            "school": ["school", "college", "university"],
+            "hospital": ["hospital", "clinic", "pharmacy"],
+            "metro": ["metro station", "train station"],
+            "hotel": ["hotel"],
+            "supermarket": ["supermarket", "mall"]
+        }
+        
+        all_markers = []
+        for cat, terms in categories.items():
+            pois = await chat_agent.fetch_nearby_places(lat, lng, terms, radius=2000)
+            for poi in pois:
+                poi["category"] = cat
+                all_markers.append(poi)
+                
+        return {
+            "status": "success",
+            "data": {
+                "center": {"lat": lat, "lng": lng, "address": address},
+                "markers": all_markers
+            }
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Failed to fetch amenities: {str(e)}")
+
 @router.get("/{locality}")
 async def get_neighbourhood_report(
     locality: str,

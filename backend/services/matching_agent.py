@@ -25,7 +25,7 @@ class MatchingAgent:
     def __init__(self):
         if settings.gemini_api_key:
             genai.configure(api_key=settings.gemini_api_key)
-        self.model = genai.GenerativeModel("gemini-3-flash-preview")
+        self.model = genai.GenerativeModel("gemini-3.5-flash")
 
     async def run_matching(self, user_id: str, profile: SearchProfile) -> List[Match]:
         """
@@ -153,7 +153,7 @@ Return JSON array:
 Return ONLY valid JSON. No markdown.
 """
         try:
-            response = self.model.generate_content(prompt)
+            response = await self.model.generate_content_async(prompt)
             raw = response.text.strip()
             if raw.startswith("```"):
                 raw = raw.split("\n", 1)[1] if "\n" in raw else raw

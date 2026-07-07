@@ -283,6 +283,8 @@ export default function OnboardingPage() {
                 <div className="mt-4 space-y-3">
                   <div className="relative">
                     <input
+                      id="onboarding-location"
+                      name="onboarding-location"
                       type="text"
                       value={citySearch}
                       onChange={(e) => {
@@ -347,6 +349,8 @@ export default function OnboardingPage() {
               {step === 3 && (
                 <div className="mt-4 space-y-3">
                   <input
+                    id="onboarding-dealbreakers"
+                    name="onboarding-dealbreakers"
                     type="text"
                     value={dealBreakers}
                     onChange={(e) => setDealBreakers(e.target.value)}

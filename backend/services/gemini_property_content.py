@@ -12,7 +12,7 @@ from database.models.property import Property
 class GeminiPropertyContentService:
 	def __init__(self):
 		self._enabled = bool(settings.gemini_api_key)
-		self._model_name = "gemini-3-flash-preview"
+		self._model_name = "gemini-3.5-flash"
 		self._model = None
 
 		if self._enabled:
@@ -127,11 +127,12 @@ class GeminiPropertyContentService:
 		if not self._model:
 			return None
 
-		def _sync_generate() -> str:
-			response = self._model.generate_content(prompt)
-			return (response.text or "").strip()
+		try:
+			response = await self._model.generate_content_async(prompt)
+			raw = (response.text or "").strip()
+		except Exception:
+			return None
 
-		raw = await asyncio.to_thread(_sync_generate)
 		if not raw:
 			return None
 
