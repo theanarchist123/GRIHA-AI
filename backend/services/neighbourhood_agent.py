@@ -14,7 +14,7 @@ from config import settings
 from database.models.neighbourhood_report import NeighbourhoodReport
 from services.activity_logger import log_activity
 
-OLLAMA_API_KEY = "308b136d86a3491d98b0d7332865bf42.naSRy7f_Xvvz7MMWykJi5gM6"
+OLLAMA_API_KEY = settings.ollama_api_key or ""
 
 class NeighbourhoodAgent:
     """

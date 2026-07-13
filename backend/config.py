@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     ocr_space_api_key: Optional[str] = None
     google_maps_api_key: Optional[str] = None
     resend_api_key: Optional[str] = None
+    ollama_api_key: Optional[str] = None
+    email_sender_email: Optional[str] = None
+    email_sender_password: Optional[str] = None
 
     # Cloudinary
     cloudinary_cloud_name: Optional[str] = None

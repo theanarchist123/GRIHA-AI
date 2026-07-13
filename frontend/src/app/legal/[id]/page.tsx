@@ -76,7 +76,7 @@ export default function LegalReportPage() {
           className="text-center space-y-4"
         >
           <Loader2 className="w-10 h-10 text-forest animate-spin mx-auto" />
-          <p className="font-dm text-charcoal text-lg">Generating Legal Report...</p>
+          <p className="font-dm text-charcoal text-lg">Generating AI Preliminary Assessment...</p>
           <p className="text-muted text-sm font-dm">Analyzing RERA status, encumbrances, property tax, and builder history</p>
         </motion.div>
       </div>
@@ -88,7 +88,7 @@ export default function LegalReportPage() {
       <div className="min-h-screen bg-cream p-6">
         <div className="max-w-3xl mx-auto bg-surface border border-border-custom rounded-2xl p-6 text-center">
           <XCircle className="w-12 h-12 text-danger mx-auto mb-3" />
-          <p className="font-dm text-charcoal text-lg mb-2">Couldn&apos;t load legal report</p>
+          <p className="font-dm text-charcoal text-lg mb-2">Couldn&apos;t load AI Preliminary Assessment</p>
           <p className="text-muted text-sm">{error}</p>
           <Link href="/dashboard" className="inline-flex mt-4 text-sm font-semibold text-forest hover:underline">
             Back to dashboard
@@ -169,6 +169,9 @@ export default function LegalReportPage() {
                   {report.property.bhk}, {report.property.locality}
                 </span>
               </div>
+              <p className="text-sm font-dm text-white/80 mb-2 uppercase tracking-wide">
+                AI Preliminary Assessment — Verify Independently
+              </p>
               <p className="font-dm text-white/90 text-lg">{report.summary}</p>
             </div>
           </div>

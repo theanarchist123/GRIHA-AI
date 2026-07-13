@@ -1,13 +1,14 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from config import settings
 
 class EmailService:
     def __init__(self):
         self.smtp_server = "smtp.gmail.com"
         self.smtp_port = 587
-        self.sender_email = "nikhilrkadam2005@gmail.com"
-        self.sender_password = "nwttopcqakidwqcm"
+        self.sender_email = settings.email_sender_email or "nikhilrkadam2005@gmail.com"
+        self.sender_password = settings.email_sender_password or ""
 
     def send_price_drop_alert(self, recipient_email: str, property_title: str, original_price: float, new_price: float, target_price: float, property_url: str):
         try:

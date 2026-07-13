@@ -14,8 +14,7 @@ def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c * 1000  # returns meters
-
-OLLAMA_API_KEY = "308b136d86a3491d98b0d7332865bf42.naSRy7f_Xvvz7MMWykJi5gM6"
+OLLAMA_API_KEY = settings.ollama_api_key or ""
 
 class NeighbourhoodChatAgent:
     def __init__(self):
