@@ -1,5 +1,24 @@
 ﻿<div align=center>
 
+<br/>
+
+<h1>griha<b>AI</b></h1>
+
+<p><em>Find Your Home. Without the Headache.</em></p>
+
+<p>An end-to-end AI-powered real estate assistant for Indian home seekers.<br/>
+Griha AI replaces brokers, saves you time, and protects your money — all in one intelligent platform.</p>
+
+<br/>
+
+<a href=https://skillicons.dev>
+  <img src=https://skillicons.dev/icons?i=nextjs,ts,py,mongodb,tailwind,fastapi,vercel />
+</a>
+
+<br/><br/>
+
+</div>
+
 ---
 
 ## 🏠 What is Griha AI?
@@ -19,7 +38,6 @@ Think of it as your personal real estate agent that never sleeps, never takes a 
 The main dashboard shows your top property matches ranked by AI compatibility score. The live **What Griha AI did while you were away** sidebar on the right keeps you updated on every automated action — legal checks, neighbourhood reports, opening offers sent, and new matches found — even when you are offline.
 
 The **Quick Glance** section at the bottom gives you an instant summary of:
-
 - Listings saved to your pipeline
 - Active negotiations in progress
 - Active price drop alerts
@@ -28,10 +46,9 @@ The **Quick Glance** section at the bottom gives you an instant summary of:
 
 ### 🏡 Property Detail Page — AI Overview + Actions
 
-![Property Detail](<frontend/public/assets/Screenshot%202026-07-07%20144052.png>)
+![Property Detail](frontend/public/assets/Screenshot%202026-07-07%20144052.png)
 
 Each property page features:
-
 - **AI Property Overview** — a smart Gemini-generated summary highlighting top points and watchouts
 - One-click access to **Verify Legal Docs**, **Schedule Visit**, **Negotiate**, **Save to Pipeline**, and **Neighbourhood Report**
 - Full property specs, furnishing status, source platform, and a direct link to the original listing
@@ -40,10 +57,9 @@ Each property page features:
 
 ### 🗺️ Commute Calculator + Interactive Amenity Map
 
-![Commute & Map](<frontend/public/assets/Screenshot%202026-07-07%20153104.png>)
+![Commute & Map](frontend/public/assets/Screenshot%202026-07-07%20153104.png)
 
 Type any workplace or destination and instantly get:
-
 - **Driving time** and distance (via OSRM routing engine)
 - **Public transit estimate** (including walking time)
 
@@ -53,10 +69,9 @@ The interactive Leaflet map shows **colour-coded markers** for all nearby amenit
 
 ### 💰 Affordability Calculator + Move-in Estimate
 
-![Affordability](<frontend/public/assets/Screenshot%202026-07-07%20144818.png>)
+![Affordability](frontend/public/assets/Screenshot%202026-07-07%20144818.png)
 
 Enter your monthly take-home income and Griha AI instantly calculates:
-
 - What **percentage of income** the rent will consume
 - Visual rent | utilities | remaining breakdown
 - **Total Move-in Estimate** — security deposit (3 months), 1st month advance, brokerage, society transfer charges, and painting costs
@@ -65,10 +80,9 @@ Enter your monthly take-home income and Griha AI instantly calculates:
 
 ### 📋 Legal Check Report — Powered by Gemini
 
-![Legal Check](<frontend/public/assets/Screenshot%202026-07-07%20161145.png>)
+![Legal Check](frontend/public/assets/Screenshot%202026-07-07%20161145.png)
 
 Every property gets a comprehensive AI-generated legal dossier covering:
-
 - **RERA Registration** — status, number, complaints filed
 - **Encumbrance Certificate** — loans, disputes, bank NOC requirements
 - **Property Tax** — compliance with the local municipal corporation
@@ -80,7 +94,7 @@ The report gives an overall verdict: ✅ **Clean** | ⚠️ **Caution** | 🔴 *
 
 ### 🤖 AI Broker Call — Voice-Powered Negotiation
 
-![AI Broker Call](<frontend/public/assets/Screenshot%202026-07-07%20153324.png>)
+![AI Broker Call](frontend/public/assets/Screenshot%202026-07-07%20153324.png)
 
 Griha AI can **roleplay as a broker** in a live voice session. It knows the property details, handles tenant questions, and conducts the entire interaction — so you never have to cold-call an unknown broker again.
 
@@ -88,10 +102,9 @@ Griha AI can **roleplay as a broker** in a live voice session. It knows the prop
 
 ### 🛎️ Price Drop Alerts
 
-![Price Drop Alerts](<frontend/public/assets/Screenshot%202026-07-07%20154905.png>)
+![Price Drop Alerts](frontend/public/assets/Screenshot%202026-07-07%20154905.png)
 
 Subscribe to price drop alerts on any property you are watching. Griha AI periodically checks listing prices and notifies you when a drop is detected. The dashboard shows:
-
 - Total active alerts and how many have triggered
 - Potential savings if all alerts hit their target
 - Historical price snapshots for each listing
@@ -100,7 +113,7 @@ Subscribe to price drop alerts on any property you are watching. Griha AI period
 
 ### 🗺️ AI Neighbourhood Explorer
 
-![Neighbourhood Explorer](<frontend/public/assets/Screenshot%202026-07-07%20153523.png>)
+![Neighbourhood Explorer](frontend/public/assets/Screenshot%202026-07-07%20153523.png)
 
 Explore any neighbourhood through a stunning dark-mode map interface. Select a property and ask Griha AI anything — *Where are the nearest hospitals?*, *Find me good parks within 2km*, *What metro stations are nearby?* — and get natural language answers with markers on the map in real time.
 
@@ -108,7 +121,7 @@ Explore any neighbourhood through a stunning dark-mode map interface. Select a p
 
 ### 🤖 Neighbourhood AI Chat
 
-![Neighbourhood AI Chat](<frontend/public/assets/Screenshot%202026-07-07%20144644.png>)
+![Neighbourhood AI Chat](frontend/public/assets/Screenshot%202026-07-07%20144644.png)
 
 The AI chat, powered by Gemini and OpenStreetMap, answers hyper-local questions about the area around any property — distances, descriptions, and practical advice — like a local friend who knows every corner of the city.
 
@@ -116,10 +129,9 @@ The AI chat, powered by Gemini and OpenStreetMap, answers hyper-local questions 
 
 ### 📄 Document Vault — AI Contract Analysis
 
-![Documents](<frontend/public/assets/Screenshot%202026-07-07%20161358.png>)
+![Documents](frontend/public/assets/Screenshot%202026-07-07%20161358.png)
 
 Upload any rent agreement, sale deed, or legal document and Griha AI will:
-
 - Extract all clauses automatically
 - Flag **high-risk** and **caution** terms in red/yellow
 - Let you ask natural language questions like *What is my lock-in period?* or *What is the penalty for early exit?*
@@ -183,35 +195,55 @@ flowchart TD
 
 ### Prerequisites
 
-| Tool    | Version |
-| ------- | ------- |
-| Node.js | 18+     |
-| Python  | 3.11+   |
-| MongoDB | 6+      |
+| Tool | Version |
+|------|---------|
+| Node.js | 18+ |
+| Python | 3.11+ |
+| MongoDB | 6+ |
 
 ### 1. Clone the repo
 
-`ash git clone https://github.com/yourusername/griha_ai.git cd griha_ai `
+`ash
+git clone https://github.com/yourusername/griha_ai.git
+cd griha_ai
+`
 
 ### 2. Backend setup
 
-`ash cd backend pip install -r requirements.txt `
+`ash
+cd backend
+pip install -r requirements.txt
+`
 
 Create a .env file in ackend/:
-`env MONGODB_URL=mongodb://localhost:27017/griha_ai GEMINI_API_KEY=your_gemini_api_key_here CLERK_SECRET_KEY=your_clerk_secret_key_here `
+`env
+MONGODB_URL=mongodb://localhost:27017/griha_ai
+GEMINI_API_KEY=your_gemini_api_key_here
+CLERK_SECRET_KEY=your_clerk_secret_key_here
+`
 
 Start the server:
-`ash python -m uvicorn main:app --host 0.0.0.0 --port 10000 --reload `
+`ash
+python -m uvicorn main:app --host 0.0.0.0 --port 10000 --reload
+`
 
 ### 3. Frontend setup
 
-`ash cd frontend npm install `
+`ash
+cd frontend
+npm install
+`
 
 Create a .env.local file in rontend/:
-`env NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key CLERK_SECRET_KEY=your_clerk_secret_key `
+`env
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+`
 
 Start the dev server:
-`ash npm run dev `
+`ash
+npm run dev
+`
 
 Open [http://localhost:3000](http://localhost:3000) 🎉
 
@@ -219,14 +251,14 @@ Open [http://localhost:3000](http://localhost:3000) 🎉
 
 ## 🧠 AI Agents
 
-| Agent                  | Purpose                                                          |
-| ---------------------- | ---------------------------------------------------------------- |
-| LegalAgent             | RERA, encumbrance, property tax, builder track record analysis   |
-| NegotiationAgent       | Market research, opening offer generation, counteroffer handling |
-| MatchingAgent          | Ranks properties against user preferences                        |
-| ContractAgent          | Clause extraction, risk flagging, Q&A on uploaded documents      |
-| GeminiExtractor        | Intelligent property data extraction from web listings           |
-| NeighbourhoodChatAgent | Geocoding and area-aware conversational AI                       |
+| Agent | Purpose |
+|-------|---------|
+| LegalAgent | RERA, encumbrance, property tax, builder track record analysis |
+| NegotiationAgent | Market research, opening offer generation, counteroffer handling |
+| MatchingAgent | Ranks properties against user preferences |
+| ContractAgent | Clause extraction, risk flagging, Q&A on uploaded documents |
+| GeminiExtractor | Intelligent property data extraction from web listings |
+| NeighbourhoodChatAgent | Geocoding and area-aware conversational AI |
 
 ---
 
