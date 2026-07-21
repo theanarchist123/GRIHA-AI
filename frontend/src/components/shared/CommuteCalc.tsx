@@ -34,7 +34,7 @@ export function CommuteCalc({ propertyAddress, propertyCity, selectedDestination
       const fullOrigin = `${propertyAddress}, ${propertyCity}`;
       const fullDest = `${destination}, ${propertyCity}`; // Assume same city for better geocoding accuracy
       
-      const res = await fetch(`http://localhost:10000/api/properties/commute/calculate?origin=${encodeURIComponent(fullOrigin)}&destination=${encodeURIComponent(fullDest)}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/commute/calculate?origin=${encodeURIComponent(fullOrigin)}&destination=${encodeURIComponent(fullDest)}`);
       const json = await res.json();
       
       if (json.status === "success") {

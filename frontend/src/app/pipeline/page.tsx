@@ -51,7 +51,7 @@ export default function PipelinePage() {
       let retryCount = 0;
       while (retryCount < 3) {
         try {
-          res = await fetch("http://localhost:10000/api/pipeline");
+          res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/pipeline`);
           break;
         } catch (err) {
           retryCount++;
@@ -107,7 +107,7 @@ export default function PipelinePage() {
 
     // Persist to backend
     try {
-      await fetch(`http://localhost:10000/api/pipeline/${id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/pipeline/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: targetCol })

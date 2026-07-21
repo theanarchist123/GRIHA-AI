@@ -30,7 +30,7 @@ export function PropertyMap({ propertyId, onMarkerClick }: PropertyMapProps) {
       if (!propertyId) return;
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:10000/api/neighbourhood/amenities/${propertyId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/neighbourhood/amenities/${propertyId}`);
         const json = await res.json();
         
         if (json.status === "success") {

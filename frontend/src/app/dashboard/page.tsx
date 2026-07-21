@@ -313,8 +313,8 @@ export default function DashboardPage() {
         if (filters.parking) params.set("parking", "true");
 
         const searchUrl = params.toString()
-          ? `http://localhost:10000/api/properties/search?${params.toString()}`
-          : "http://localhost:10000/api/properties/search";
+          ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/search?${params.toString()}`
+          : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/search`;
 
         let searchRes;
         let retryCount = 0;
@@ -354,7 +354,7 @@ export default function DashboardPage() {
 
         // Only fallback when there are no active filters
         if (apiProperties.length === 0 && !hasActiveFilters) {
-          const allRes = await fetch("http://localhost:10000/api/properties/");
+          const allRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/`);
           const allJson = await allRes.json();
           apiProperties = Array.isArray(allJson.data) ? allJson.data : [];
         }
@@ -365,9 +365,9 @@ export default function DashboardPage() {
         if (userEmail) {
           try {
             const [plRes, alRes, actRes] = await Promise.all([
-              fetch(`http://localhost:10000/api/pipeline/?user_email=${encodeURIComponent(userEmail)}`),
-              fetch(`http://localhost:10000/api/alerts/?user_email=${encodeURIComponent(userEmail)}`),
-              user?.id ? fetch(`http://localhost:10000/api/activity/?clerk_id=${encodeURIComponent(user.id)}`) : Promise.resolve(null)
+              fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/pipeline/?user_email=${encodeURIComponent(userEmail)}`),
+              fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/alerts/?user_email=${encodeURIComponent(userEmail)}`),
+              user?.id ? fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/activity/?clerk_id=${encodeURIComponent(user.id)}`) : Promise.resolve(null)
             ]);
             if (plRes.ok) {
               const plJson = await plRes.json();

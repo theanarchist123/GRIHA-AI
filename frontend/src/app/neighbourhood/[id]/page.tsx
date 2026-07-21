@@ -47,7 +47,7 @@ export default function NeighbourhoodPage() {
     async function initProperty() {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:10000/api/properties/${propertyId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/${propertyId}`);
         const json = await res.json();
         
         if (json.status === "success" && json.data) {
@@ -55,7 +55,7 @@ export default function NeighbourhoodPage() {
           const address = prop.address || `${prop.locality}, ${prop.city}`;
           
           // Send an initial hidden chat query to just get coordinates
-          const geoRes = await fetch("http://localhost:10000/api/neighbourhood/chat", {
+          const geoRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/neighbourhood/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ property_id: propertyId, query: "where is this exactly?" })

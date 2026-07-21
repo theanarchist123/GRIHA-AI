@@ -29,7 +29,7 @@ export function MoveInCostBreakdown({ propertyId }: MoveInCostProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:10000/api/properties/${propertyId}/move-in-cost`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/${propertyId}/move-in-cost`)
       .then(res => res.json())
       .then(json => {
         if (json.status === "success") {

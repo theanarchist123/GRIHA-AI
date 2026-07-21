@@ -70,7 +70,7 @@ export default function NeighbourhoodDashboardIndex() {
     async function fetchProperties() {
       try {
         setLoading(true);
-        const res = await fetch("http://localhost:10000/api/properties/");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/`);
         const json = await res.json();
         
         if (isMounted && Array.isArray(json?.data)) {

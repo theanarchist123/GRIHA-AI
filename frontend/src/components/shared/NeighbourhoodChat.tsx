@@ -48,7 +48,7 @@ export default function NeighbourhoodChat({ propertyId, onUpdateMap }: Neighbour
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://localhost:10000/api/neighbourhood/chat", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/neighbourhood/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ property_id: propertyId, query: userMsg.text }),

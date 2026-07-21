@@ -2,11 +2,12 @@
 Documents API Routes — Real file upload + Gemini analysis pipeline.
 """
 import os
-import uuid
+from urllib.parse import urlparse
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from bson import ObjectId
+import requests
 from database.models.document import DocumentModel
 from database.models.user import User
 from services.contract_agent import ContractAgent
@@ -14,9 +15,20 @@ from services.contract_agent import ContractAgent
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
 contract_agent = ContractAgent()
 
-# Local upload directory for files (Cloudinary fallback)
-UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+def load_document_bytes(file: Optional[UploadFile], blob_url: Optional[str]) -> tuple[bytes, str]:
+    if file is not None:
+        return file.file.read(), file.filename or "uploaded-document"
+
+    if not blob_url:
+        raise HTTPException(400, "A file upload or blob_url is required")
+
+    response = requests.get(blob_url, timeout=30)
+    if response.status_code >= 400:
+        raise HTTPException(400, f"Unable to fetch uploaded blob: {response.status_code}")
+
+    filename = os.path.basename(urlparse(blob_url).path) or "uploaded-document"
+    return response.content, filename
 
 
 class AskQuestionRequest(BaseModel):
@@ -26,28 +38,20 @@ class AskQuestionRequest(BaseModel):
 
 @router.post("/upload")
 async def upload_document(
-    file: UploadFile = File(...),
+    file: Optional[UploadFile] = File(default=None),
+    blob_url: Optional[str] = Form(default=None),
+    filename: Optional[str] = Form(default=None),
     document_type: str = Form(default="rent_agreement"),
     clerk_id: Optional[str] = Form(default=None),
     property_id: Optional[str] = Form(default=None),
 ):
     """Upload a document, extract text, and run AI analysis."""
-    if not file.filename:
-        raise HTTPException(400, "No file provided")
-
-    # Read file bytes
-    file_bytes = await file.read()
+    source_name = filename or (file.filename if file and file.filename else None) or "uploaded-document"
+    file_bytes, resolved_name = load_document_bytes(file, blob_url)
     if not file_bytes:
         raise HTTPException(400, "Empty file")
 
-    # Save locally (Cloudinary fallback)
-    ext = os.path.splitext(file.filename)[1]
-    stored_name = f"{uuid.uuid4().hex}{ext}"
-    stored_path = os.path.join(UPLOAD_DIR, stored_name)
-    with open(stored_path, "wb") as f:
-        f.write(file_bytes)
-
-    local_url = f"/uploads/{stored_name}"
+    local_url = blob_url or f"upload://{resolved_name}"
 
     # Run the analysis pipeline
     try:
@@ -81,7 +85,7 @@ async def upload_document(
         property=ObjectId(property_id) if property_id and ObjectId.is_valid(property_id) else None,
         document_type=document_type,
         cloudinary_url=local_url,
-        filename=file.filename,
+        filename=source_name,
         ai_summary=analysis.get("ai_summary", ""),
         extracted_text=analysis.get("extracted_text", ""),
         extracted_data=analysis.get("extracted_data", {}),

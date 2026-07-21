@@ -37,7 +37,7 @@ export function PropertyCard({ property, className, isSavedToPipeline = false, i
     e.preventDefault();
     if (savedToPipeline) return;
     try {
-      const res = await fetch("http://localhost:10000/api/pipeline", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/pipeline`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -61,7 +61,7 @@ export function PropertyCard({ property, className, isSavedToPipeline = false, i
     if (savedToAlerts) return;
     try {
       const user_email = user?.primaryEmailAddress?.emailAddress || "guest@example.com";
-      const res = await fetch("http://localhost:10000/api/alerts", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/alerts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -33,7 +33,7 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchProperty = async () => {
       try {
-        const res = await fetch(`http://localhost:10000/api/properties/${params.id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/${params.id}`);
         if (res.ok) {
           const json = await res.json();
           setProperty(json.data);
@@ -100,7 +100,7 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
       setFullTranscript((currentTranscript) => {
         if (currentTranscript.length > 0 && propertyRef.current) {
           const pName = propertyRef.current?.apartmentName || propertyRef.current?.title || "the property";
-          fetch("http://localhost:10000/api/documents/save-transcript", {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/documents/save-transcript`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

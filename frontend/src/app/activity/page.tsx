@@ -43,7 +43,7 @@ export default function ActivityPage() {
   async function fetchActivity() {
     setLoading(true);
     try {
-      let url = `http://localhost:10000/api/activity/?limit=50`;
+      let url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/activity/?limit=50`;
       if (userId) url += `&clerk_id=${userId}`;
       if (filter && filter !== "all") url += `&type_filter=${filter}`;
 

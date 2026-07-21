@@ -28,7 +28,7 @@ export function SocietyReviews({ propertyId }: SocietyReviewsProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:10000/api/properties/${propertyId}/reviews`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/${propertyId}/reviews`)
       .then(res => res.json())
       .then(json => {
         if (json.status === "success") {

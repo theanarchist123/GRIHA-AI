@@ -43,7 +43,7 @@ export default function PriceDropAlertsPage() {
       let retryCount = 0;
       while (retryCount < 3) {
         try {
-          res = await fetch(`http://localhost:10000/api/alerts/?user_email=${encodeURIComponent(userEmail)}`);
+          res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/alerts/?user_email=${encodeURIComponent(userEmail)}`);
           break;
         } catch (err) {
           retryCount++;
@@ -66,7 +66,7 @@ export default function PriceDropAlertsPage() {
   const handleDelete = async (property_id: string) => {
     if (!userEmail) return;
     try {
-      await fetch(`http://localhost:10000/api/alerts/${property_id}?user_email=${encodeURIComponent(userEmail)}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/alerts/${property_id}?user_email=${encodeURIComponent(userEmail)}`, {
         method: "DELETE"
       });
       fetchAlerts();

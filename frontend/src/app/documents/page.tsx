@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { upload } from "@vercel/blob/client";
 import {
   Search, FileText, Upload, Eye, Download, Share2, File, Image,
   MessageSquare, Scale, Loader2, AlertTriangle, ShieldCheck, XCircle,
@@ -57,7 +58,7 @@ export default function DocumentsPage() {
   async function fetchDocuments() {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:10000/api/documents/");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/documents/`);
       const json = await res.json();
       if (json.status === "success") {
         setDocuments(json.data || []);
@@ -72,11 +73,17 @@ export default function DocumentsPage() {
   async function uploadFile(file: File) {
     setUploading(true);
     try {
+      const blob = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: "/api/blob/upload",
+      });
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("blob_url", blob.url);
+      formData.append("filename", file.name);
       formData.append("document_type", guessDocType(file.name));
 
-      const res = await fetch("http://localhost:10000/api/documents/upload", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/documents/upload`, {
         method: "POST",
         body: formData,
       });
@@ -107,7 +114,7 @@ export default function DocumentsPage() {
     setAskingAI(true);
     setAiAnswer("");
     try {
-      const res = await fetch("http://localhost:10000/api/documents/ask", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/documents/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: searchQuery }),
