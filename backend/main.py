@@ -6,6 +6,7 @@ from config import settings
 from api.routes import router as api_router
 import asyncio
 import sys
+from typing import List
 from services.price_monitor import monitor_prices_loop
 
 if sys.platform == "win32":
@@ -33,10 +34,22 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+
+def _build_cors_origins() -> List[str]:
+    origins = [settings.frontend_url]
+
+    if settings.app_env != "production":
+        origins.append("http://localhost:3000")
+        origins.append("http://127.0.0.1:3000")
+
+    return list(dict.fromkeys(origin.rstrip("/") for origin in origins if origin))
+
+
 # CORS framework for frontend connectivity
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_url],
+    allow_origins=_build_cors_origins(),
+    allow_origin_regex=r"https://.*\.vercel\.app" if settings.app_env == "production" else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
