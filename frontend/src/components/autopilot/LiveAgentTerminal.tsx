@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Terminal, Loader2, X } from "lucide-react";
+import { buildWebSocketUrl } from "@/lib/api";
 
 export default function LiveAgentTerminal({ onClose, hunt }: { onClose: () => void, hunt: any }) {
   const [status, setStatus] = useState("Initializing deep research agent...");
@@ -18,7 +19,7 @@ export default function LiveAgentTerminal({ onClose, hunt }: { onClose: () => vo
 
     setActions([{ text: "Connecting to Intelligence Cluster...", time: Date.now(), type: 'info' }]);
     
-    const wsUrl = `${process.env.NEXT_PUBLIC_API_URL?.replace("http", "ws") || "ws://127.0.0.1:10000"}/ws/browser-stream/${hunt.id}`;
+    const wsUrl = buildWebSocketUrl(`/ws/browser-stream/${hunt.id}`);
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {

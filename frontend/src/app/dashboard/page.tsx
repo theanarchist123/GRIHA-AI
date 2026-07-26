@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
+import { buildWebSocketUrl } from "@/lib/api";
 
 const ACTIVITY_ICONS: Record<string, { icon: typeof Home; color: string }> = {
   match: { icon: Home, color: "bg-forest text-white" },
@@ -236,7 +237,7 @@ export default function DashboardPage() {
     setLoading(false);
 
     const clientId = Math.random().toString(36).substring(7);
-    const ws = new WebSocket(`ws://127.0.0.1:10000/api/ws/scrape-progress/${clientId}`);
+    const ws = new WebSocket(buildWebSocketUrl(`/api/ws/scrape-progress/${clientId}`));
 
     ws.onopen = () => {
       setScrapeStatus("🔍 Connected! Starting live property search...");

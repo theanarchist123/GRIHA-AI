@@ -1,0 +1,108 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Write bug condition exploration test": [
+      {
+        "executionId": "5b38103f-ff45-40a3-a747-21571cf45424",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073648636
+      },
+      {
+        "executionId": "5b38103f-ff45-40a3-a747-21571cf45424",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073659871
+      },
+      {
+        "executionId": "3aa4077a-9fa1-4f7c-b175-65576db93d48",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073826753
+      }
+    ],
+    "2. Write preservation property tests (BEFORE implementing fix)": [
+      {
+        "executionId": "5b38103f-ff45-40a3-a747-21571cf45424",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073648949
+      },
+      {
+        "executionId": "3aa4077a-9fa1-4f7c-b175-65576db93d48",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073827516
+      }
+    ],
+    "3.1 Create centralized WebSocket URL utility": [
+      {
+        "executionId": "5b38103f-ff45-40a3-a747-21571cf45424",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073649034
+      },
+      {
+        "executionId": "3aa4077a-9fa1-4f7c-b175-65576db93d48",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073832405
+      },
+      {
+        "executionId": "3aa4077a-9fa1-4f7c-b175-65576db93d48",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073880155
+      }
+    ],
+    "3.2 Update dashboard/page.tsx to use utility": [
+      {
+        "executionId": "5b38103f-ff45-40a3-a747-21571cf45424",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073649100
+      },
+      {
+        "executionId": "3aa4077a-9fa1-4f7c-b175-65576db93d48",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073884667
+      }
+    ],
+    "3.3 Update AgentProgress.tsx to use utility": [
+      {
+        "executionId": "5b38103f-ff45-40a3-a747-21571cf45424",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073649167
+      },
+      {
+        "executionId": "3aa4077a-9fa1-4f7c-b175-65576db93d48",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073885373
+      }
+    ],
+    "3.4 Update LiveAgentTerminal.tsx to use utility": [
+      {
+        "executionId": "5b38103f-ff45-40a3-a747-21571cf45424",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073649231
+      },
+      {
+        "executionId": "3aa4077a-9fa1-4f7c-b175-65576db93d48",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073886110
+      }
+    ],
+    "3.5 Verify bug condition exploration test now passes": [
+      {
+        "executionId": "5b38103f-ff45-40a3-a747-21571cf45424",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073649290
+      }
+    ],
+    "3.6 Verify preservation tests still pass": [
+      {
+        "executionId": "5b38103f-ff45-40a3-a747-21571cf45424",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073649355
+      }
+    ],
+    "4. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "5b38103f-ff45-40a3-a747-21571cf45424",
+        "chatSessionId": "sess_fb0707c6-7be8-4274-b75d-f007bfc64a7d",
+        "timestamp": 1785073649468
+      }
+    ]
+  }
+}

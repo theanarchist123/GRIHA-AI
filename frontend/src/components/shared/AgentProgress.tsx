@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { CheckCircle2, Search, AlertTriangle, RefreshCw, Globe, Sparkles } from "lucide-react";
+import { buildWebSocketUrl } from "@/lib/api";
 
 interface AgentProgressProps {
   location: string;
@@ -41,7 +42,7 @@ export function AgentProgress({ location, bhk, onComplete }: AgentProgressProps)
 
   const connectWs = useCallback(() => {
     const clientId = Math.random().toString(36).substring(7);
-    const ws = new WebSocket(`ws://127.0.0.1:10000/api/ws/scrape-progress/${clientId}`);
+    const ws = new WebSocket(buildWebSocketUrl(`/api/ws/scrape-progress/${clientId}`));
     wsRef.current = ws;
 
     ws.onopen = () => {
