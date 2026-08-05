@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Search, Filter, Plus, MapPin, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { DashboardSidebar, DashboardTopBar } from "@/components/shared/Navbar";
+import { DashboardSidebar, DashboardTopBar, MobileSidebarProvider } from "@/components/shared/Navbar";
 import { motion } from "framer-motion";
 
 type PipelineItem = {
@@ -120,34 +120,37 @@ export default function PipelinePage() {
   };
 
   return (
+    <MobileSidebarProvider>
     <div className="min-h-screen bg-cream flex font-sans">
       <DashboardSidebar />
-      <div className="ml-[260px] flex-1 flex flex-col relative">
+      <div className="lg:ml-[260px] flex-1 flex flex-col relative">
         <DashboardTopBar />
 
         {/* Header */}
-        <header className="px-6 py-6 flex items-center justify-between border-b border-border-custom bg-surface sticky top-0 z-10">
+        <header className="px-4 sm:px-6 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-custom bg-surface sticky top-0 z-10">
           <div>
-            <h1 className="text-3xl font-playfair text-charcoal">My Pipeline</h1>
+            <h1 className="text-2xl sm:text-3xl font-playfair text-charcoal">My Pipeline</h1>
             <p className="text-muted text-sm font-dm mt-1">Track and manage your shortlisted properties</p>
           </div>
           
-          <div className="flex gap-4">
-            <div className="relative">
+          <div className="flex gap-2 sm:gap-4 flex-wrap">
+            <div className="relative flex-1 sm:flex-none">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={18} />
               <input 
                 id="pipeline-search"
                 name="pipeline-search"
                 type="text" 
                 placeholder="Search properties..." 
-                className="pl-10 pr-4 py-2 bg-cream border border-border-custom rounded-lg text-sm text-charcoal focus:ring-2 focus:ring-forest outline-none font-dm"
+                className="w-full sm:w-auto pl-10 pr-4 py-2 bg-cream border border-border-custom rounded-lg text-sm text-charcoal focus:ring-2 focus:ring-forest outline-none font-dm"
               />
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-transparent border border-border-custom rounded-lg text-sm font-medium text-charcoal hover:bg-cream transition-colors font-dm">
-              <Filter size={16} /> Filter
+            <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-transparent border border-border-custom rounded-lg text-sm font-medium text-charcoal hover:bg-cream transition-colors font-dm">
+              <Filter size={16} />
+              <span className="hidden sm:inline">Filter</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-forest text-cream rounded-lg text-sm font-medium hover:bg-forest-light transition-colors font-dm">
-              <Plus size={16} /> Add Property
+            <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-forest text-cream rounded-lg text-sm font-medium hover:bg-forest-light transition-colors font-dm">
+              <Plus size={16} />
+              <span className="hidden sm:inline">Add Property</span>
             </button>
           </div>
         </header>
@@ -209,5 +212,6 @@ export default function PipelinePage() {
         </div>
       </div>
     </div>
+    </MobileSidebarProvider>
   );
 }

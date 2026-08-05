@@ -285,7 +285,7 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      <div className="sticky top-0 z-30 bg-cream/90 backdrop-blur-md border-b border-border-custom px-6 py-3">
+      <div className="sticky top-0 z-30 bg-cream/90 backdrop-blur-md border-b border-border-custom px-4 sm:px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center gap-4">
           <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted hover:text-charcoal transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -302,7 +302,7 @@ export default function PropertyDetailPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Image Gallery */}
@@ -311,7 +311,7 @@ export default function PropertyDetailPage() {
               <img
                 src={property.images[selectedImage] || property.images[0] || STATIC_IMAGES.apartment1}
                 alt={heading}
-                className="w-full h-[420px] object-cover"
+                className="w-full h-[240px] sm:h-[320px] lg:h-[420px] object-cover"
               />
             </div>
             {/* Thumbnail strip */}

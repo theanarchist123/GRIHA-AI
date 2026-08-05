@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { DashboardSidebar, DashboardTopBar, type DashboardSearchFilters } from "@/components/shared/Navbar";
+import { DashboardSidebar, DashboardTopBar, MobileSidebarProvider, type DashboardSearchFilters } from "@/components/shared/Navbar";
 import { PropertyCard } from "@/components/shared/PropertyCard";
 import { SkeletonCard } from "@/components/shared/LoadingState";
 import { useEffect, useMemo, useState } from "react";
@@ -463,10 +463,11 @@ export default function DashboardPage() {
 
 
   return (
+    <MobileSidebarProvider>
     <div className="min-h-screen bg-cream">
       <DashboardSidebar />
 
-      <div className="ml-[260px] mr-[300px]">
+      <div className="lg:ml-[260px] xl:mr-[300px]">
         <DashboardTopBar filters={filters} onApplyFilters={handleApplyFilters} />
 
         <div className="p-6 space-y-8">
@@ -524,15 +525,15 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-thin snap-x snap-mandatory -mx-2 px-2">
+            <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 scrollbar-thin snap-x snap-mandatory -mx-2 px-2">
               {loading && Array.from({ length: 4 }).map((_, i) => (
-                <SkeletonCard key={`skeleton-${i}`} className="w-[335px] shrink-0 snap-start" />
+                <SkeletonCard key={`skeleton-${i}`} className="w-[280px] sm:w-[335px] shrink-0 snap-start" />
               ))}
 
               {/* Live-streamed cards during scraping */}
               {scraping && liveProperties.length === 0 && (
-                Array.from({ length: 2 }).map((_, i) => (
-                  <SkeletonCard key={`scrape-skeleton-${i}`} className="w-[335px] shrink-0 snap-start" />
+                  Array.from({ length: 2 }).map((_, i) => (
+                    <SkeletonCard key={`scrape-skeleton-${i}`} className="w-[280px] sm:w-[335px] shrink-0 snap-start" />
                 ))
               )}
               <AnimatePresence>
@@ -603,7 +604,7 @@ export default function DashboardPage() {
           <section id="pipeline">
             <h2 className="font-playfair text-2xl text-charcoal mb-4">Quick Glance</h2>
             {!loading && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                 <div className="bg-surface rounded-xl border border-border-custom p-6 flex flex-col items-center justify-center text-center">
                   <div className="w-12 h-12 bg-forest/10 rounded-full flex items-center justify-center mb-4">
                     <CheckCircle className="w-6 h-6 text-forest" />
@@ -631,8 +632,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* AI Activity Feed - Right Panel */}
-      <div className="fixed right-0 top-0 h-screen w-[300px] bg-surface border-l border-border-custom overflow-y-auto">
+      {/* AI Activity Feed - Right Panel - hidden on mobile/tablet */}
+      <div className="hidden xl:block fixed right-0 top-0 h-screen w-[300px] bg-surface border-l border-border-custom overflow-y-auto">
         <div className="p-4 border-b border-border-custom">
           <h3 className="font-dm font-bold text-charcoal text-sm">What Griha AI did while you were away</h3>
         </div>
@@ -674,5 +675,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+    </MobileSidebarProvider>
   );
 }

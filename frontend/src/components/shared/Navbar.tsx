@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, createContext, useContext } from "react";
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import {
   Home,
@@ -20,7 +20,36 @@ import {
   SlidersHorizontal,
   LocateFixed,
   Loader2,
+  Menu,
+  X,
 } from "lucide-react";
+
+// Context so pages can control sidebar open state
+const MobileSidebarContext = createContext<{
+  isOpen: boolean;
+  toggle: () => void;
+  close: () => void;
+}>({
+  isOpen: false,
+  toggle: () => {},
+  close: () => {},
+});
+
+export function useMobileSidebar() {
+  return useContext(MobileSidebarContext);
+}
+
+export function MobileSidebarProvider({ children }: { children: React.ReactNode }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const toggle = () => setIsOpen((p) => !p);
+  const close = () => setIsOpen(false);
+
+  return (
+    <MobileSidebarContext.Provider value={{ isOpen, toggle, close }}>
+      {children}
+    </MobileSidebarContext.Provider>
+  );
+}
 
 const NAV_ITEMS = [
   { label: "My Matches", href: "/dashboard", icon: Home, badge: 8 },
@@ -37,6 +66,7 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user, isSignedIn } = useUser();
+  const { isOpen, close } = useMobileSidebar();
 
   const preferredLocation = searchParams.get("location") || "";
   const preferredBhk = searchParams.get("bhk") || "Any BHK";
@@ -45,14 +75,18 @@ export function DashboardSidebar() {
     ? `${preferredBhk} in ${preferredLocation}`
     : "Set location and BHK to personalize matches";
 
-  return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[260px] bg-surface border-r border-border-custom flex flex-col z-40">
+  const sidebarContent = (
+    <>
       {/* Logo */}
-      <div className="px-6 py-6">
+      <div className="px-6 py-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-1">
           <span className="font-playfair italic text-2xl text-charcoal">griha</span>
           <span className="font-playfair text-2xl text-warm-gold font-bold">AI</span>
         </Link>
+        {/* Close button - mobile only */}
+        <button onClick={close} className="lg:hidden p-1 text-muted hover:text-charcoal">
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* User greeting */}
@@ -70,6 +104,7 @@ export function DashboardSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={close}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-dm transition-all",
                 isActive
@@ -108,7 +143,42 @@ export function DashboardSidebar() {
           </SignInButton>
         </SignedOut>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar - always visible on lg+ */}
+      <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 w-[260px] bg-surface border-r border-border-custom flex-col z-40">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={close}
+              className="fixed inset-0 bg-charcoal/40 backdrop-blur-sm z-50 lg:hidden"
+            />
+            {/* Drawer */}
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed left-0 top-0 bottom-0 w-[280px] bg-surface border-r border-border-custom flex flex-col z-50 lg:hidden"
+            >
+              {sidebarContent}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -126,6 +196,7 @@ interface DashboardTopBarProps {
 }
 
 export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProps) {
+  const mobileSidebar = useMobileSidebar();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [draftFilters, setDraftFilters] = useState<DashboardSearchFilters>(filters || {
     location: "",
@@ -269,20 +340,28 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
 
   return (
     <div className="sticky top-0 z-30 bg-cream/90 backdrop-blur-md border-b border-border-custom">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-3 min-h-[72px] gap-4">
-        {/* Status indicators */}
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="flex items-center gap-1.5 bg-surface/50 border border-border-custom px-3 py-1.5 rounded-full shrink-0">
+      <div className="flex items-center px-3 sm:px-6 py-3 min-h-[60px] lg:min-h-[72px] gap-2 sm:gap-4">
+        {/* Mobile hamburger */}
+        <button
+          onClick={mobileSidebar.toggle}
+          className="lg:hidden p-2 text-charcoal hover:bg-sand rounded-xl transition-colors shrink-0"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        {/* Status indicators - hidden on small mobile */}
+        <div className="hidden sm:flex items-center gap-2 lg:gap-4 min-w-0 shrink-0">
+          <div className="flex items-center gap-1.5 bg-surface/50 border border-border-custom px-2 sm:px-3 py-1.5 rounded-full shrink-0">
             <motion.span
               className="w-2 h-2 rounded-full bg-success"
               animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
-            <span className="text-[13px] text-charcoal font-dm">
-              <span className="font-bold">1,247</span> <span className="text-muted">searched</span>
+            <span className="text-[12px] sm:text-[13px] text-charcoal font-dm">
+              <span className="font-bold">1,247</span> <span className="text-muted hidden md:inline">searched</span>
             </span>
           </div>
-          <div className="flex items-center gap-1.5 bg-forest/5 border border-forest/10 px-3 py-1.5 rounded-full hidden sm:flex shrink-0">
+          <div className="hidden md:flex items-center gap-1.5 bg-forest/5 border border-forest/10 px-3 py-1.5 rounded-full shrink-0">
             <span className="font-bold text-forest text-[13px]">8</span>
             <span className="text-forest/70 text-[13px] font-dm">new matches</span>
           </div>
@@ -292,8 +371,8 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
         <div 
           ref={searchRef}
           className={cn(
-            "relative transition-all duration-300 ease-out z-50",
-            isSearchExpanded ? "w-[500px]" : "w-[300px]"
+            "relative transition-all duration-300 ease-out z-50 flex-1 sm:flex-none",
+            isSearchExpanded ? "sm:w-[500px] w-full" : "sm:w-[250px] md:w-[300px] w-full"
           )}
         >
           <div 
@@ -304,9 +383,9 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
             onClick={() => !isSearchExpanded && setIsSearchExpanded(true)}
           >
             {/* The collapsed view / Search Input row */}
-            <div className="flex items-center px-2 py-1.5 h-12">
-              <div className="flex-1 flex items-center px-3 relative">
-                <Search className="w-4 h-4 text-muted mr-3 shrink-0" />
+            <div className="flex items-center px-2 py-1.5 h-10 sm:h-12">
+              <div className="flex-1 flex items-center px-2 sm:px-3 relative">
+                <Search className="w-4 h-4 text-muted mr-2 sm:mr-3 shrink-0" />
                 <input
                   id="location-search"
                   name="location-search"
@@ -351,7 +430,7 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
                 type="button"
                 onClick={handleUseCurrentLocation}
                 disabled={locating}
-                className="px-3 h-9 border-l border-border-custom text-sm font-dm text-muted hover:text-charcoal transition-colors flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-2 sm:px-3 h-9 border-l border-border-custom text-sm font-dm text-muted hover:text-charcoal transition-colors flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 title="Use my current location"
               >
                 {locating ? (
@@ -363,9 +442,9 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
               </button>
               
               {!isSearchExpanded && (
-                <div className="px-3 border-l border-border-custom text-sm font-dm text-muted flex items-center gap-2">
+                <div className="hidden sm:flex px-3 border-l border-border-custom text-sm font-dm text-muted items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4" />
-                  Filters
+                  <span className="hidden md:inline">Filters</span>
                 </div>
               )}
 
@@ -375,7 +454,7 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
                     e.stopPropagation();
                     applyFilters();
                   }}
-                  className="px-5 py-2 mr-1 bg-forest text-white text-sm font-semibold rounded-xl hover:bg-forest-light transition-colors shadow-sm"
+                  className="px-3 sm:px-5 py-2 mr-1 bg-forest text-white text-sm font-semibold rounded-xl hover:bg-forest-light transition-colors shadow-sm"
                 >
                   Search
                 </button>
@@ -389,10 +468,10 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="border-t border-border-custom bg-surface px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-4"
+                  className="border-t border-border-custom bg-surface px-3 sm:px-5 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4"
                 >
                   {/* Dropdown for BHK */}
-                  <div className="flex flex-col gap-1.5 min-w-[120px]">
+                  <div className="flex flex-col gap-1.5 min-w-0">
                     <span className="text-xs font-dm text-muted font-medium uppercase tracking-wider">SIZE</span>
                     <select 
                       value={draftFilters.bhk}
@@ -407,7 +486,7 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
                     </select>
                   </div>
 
-                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                  <div className="flex flex-col gap-1.5 sm:col-span-2">
                     <span className="text-xs font-dm text-muted font-medium uppercase tracking-wider">AMENITIES</span>
                     <div className="flex flex-wrap gap-2">
                       <button
@@ -472,12 +551,12 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
         </div>
 
         {/* Right side interactions */}
-        <div className="flex items-center justify-end gap-3">
-          <button className="relative p-2.5 bg-surface border border-border-custom hover:border-forest/50 rounded-xl transition-all hover:shadow-sm">
+        <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0">
+          <button className="relative p-2 sm:p-2.5 bg-surface border border-border-custom hover:border-forest/50 rounded-xl transition-all hover:shadow-sm">
             <Bell className="w-4 h-4 text-charcoal" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger border border-white rounded-full" />
+            <span className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 w-2 h-2 bg-danger border border-white rounded-full" />
           </button>
-          <Link href="/activity" className="p-2.5 bg-surface border border-border-custom hover:border-forest/50 rounded-xl transition-all hover:shadow-sm">
+          <Link href="/activity" className="p-2 sm:p-2.5 bg-surface border border-border-custom hover:border-forest/50 rounded-xl transition-all hover:shadow-sm">
             <Activity className="w-4 h-4 text-charcoal" />
           </Link>
         </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@clerk/nextjs";
 import { Pencil, X, Check, MapPin, Wallet, Heart, Ban, Navigation, Bell, Loader2, Save } from "lucide-react";
-import { DashboardSidebar, DashboardTopBar } from "@/components/shared/Navbar";
+import { DashboardSidebar, DashboardTopBar, MobileSidebarProvider } from "@/components/shared/Navbar";
 
 interface PreferencesData {
   id: string;
@@ -124,25 +124,28 @@ export default function PreferencesPage() {
 
   if (loading) {
     return (
+      <MobileSidebarProvider>
       <div className="min-h-screen bg-cream">
         <DashboardSidebar />
-        <div className="ml-[260px]">
+        <div className="lg:ml-[260px]">
           <DashboardTopBar />
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-forest animate-spin" />
           </div>
         </div>
       </div>
+      </MobileSidebarProvider>
     );
   }
 
   return (
+    <MobileSidebarProvider>
     <div className="min-h-screen bg-cream">
       <DashboardSidebar />
-      <div className="ml-[260px]">
+      <div className="lg:ml-[260px]">
         <DashboardTopBar />
 
-        <div className="p-6 max-w-3xl">
+        <div className="p-4 sm:p-6 max-w-3xl">
           <h1 className="font-playfair text-3xl text-charcoal mb-6">Preferences</h1>
 
           {!prefs ? (
@@ -298,5 +301,6 @@ export default function PreferencesPage() {
         </div>
       </div>
     </div>
+    </MobileSidebarProvider>
   );
 }

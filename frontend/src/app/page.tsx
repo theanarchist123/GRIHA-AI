@@ -18,6 +18,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { STATIC_IMAGES } from "@/lib/unsplash";
+import { useState } from "react";
 
 const stagger = {
   hidden: {},
@@ -40,12 +41,12 @@ function HeroSection() {
       <div className="absolute inset-0 bg-charcoal/55" />
 
       {/* Navbar */}
-      <nav className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-8 py-5">
+      <nav className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5">
         <Link href="/" className="flex items-center gap-1">
           <span className="font-playfair italic text-2xl text-white">griha</span>
           <span className="font-playfair text-2xl text-warm-gold font-bold">AI</span>
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-6">
           <a href="#how-it-works" className="text-white/80 hover:text-white text-sm font-dm transition-colors">How it works</a>
           <a href="#features" className="text-white/80 hover:text-white text-sm font-dm transition-colors">Features</a>
           <a href="#pricing" className="text-white/80 hover:text-white text-sm font-dm transition-colors">Pricing</a>
@@ -53,6 +54,9 @@ function HeroSection() {
             Get Started
           </Link>
         </div>
+        <Link href="/sign-in" className="md:hidden bg-white/10 hover:bg-white/20 text-white text-sm font-dm px-4 py-2 rounded-full border border-white/20 transition-all">
+          Get Started
+        </Link>
       </nav>
 
       {/* Content */}
@@ -64,7 +68,7 @@ function HeroSection() {
       >
         <motion.h1
           variants={fadeUp}
-          className="font-playfair text-6xl md:text-7xl lg:text-[76px] text-white leading-tight"
+          className="font-playfair text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[76px] text-white leading-tight"
         >
           Find Your Home.
           <br />
@@ -189,14 +193,14 @@ function FeaturesSection() {
           <p className="text-white/60 font-dm mt-4 text-lg">Powered by intelligence. Built for peace of mind.</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[200px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 auto-rows-auto md:auto-rows-[200px]">
           {/* Large card - Negotiation */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             whileHover={{ scale: 1.02, borderColor: "rgba(201,146,42,0.5)" }}
-            className="md:col-span-2 md:row-span-2 bg-charcoal border border-white/10 rounded-2xl p-6 flex flex-col transition-all"
+            className="sm:col-span-2 md:row-span-2 bg-charcoal border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col transition-all"
           >
             <h3 className="font-dm font-bold text-white text-lg mb-4">Real-time Negotiation</h3>
             <div className="flex-1 space-y-3 overflow-hidden">
@@ -235,7 +239,7 @@ function FeaturesSection() {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
             whileHover={{ scale: 1.02, borderColor: "rgba(201,146,42,0.5)" }}
-            className="md:col-span-2 bg-charcoal border border-white/10 rounded-2xl p-6 transition-all"
+            className="sm:col-span-2 bg-charcoal border border-white/10 rounded-2xl p-5 sm:p-6 transition-all"
           >
             <h3 className="font-dm font-bold text-white text-lg mb-3">Legal Risk Assessment</h3>
             <div className="flex flex-wrap gap-2">
@@ -262,7 +266,7 @@ function FeaturesSection() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
             whileHover={{ scale: 1.02, borderColor: "rgba(201,146,42,0.5)" }}
-            className="bg-charcoal border border-white/10 rounded-2xl p-6 transition-all"
+            className="bg-charcoal border border-white/10 rounded-2xl p-5 sm:p-6 transition-all"
           >
             <div className="flex items-center gap-2 mb-3">
               <Bell className="w-4 h-4 text-warm-gold" />
@@ -288,7 +292,7 @@ function FeaturesSection() {
             viewport={{ once: true }}
             transition={{ delay: 0.25 }}
             whileHover={{ scale: 1.02, borderColor: "rgba(201,146,42,0.5)" }}
-            className="bg-charcoal border border-white/10 rounded-2xl p-6 transition-all"
+            className="bg-charcoal border border-white/10 rounded-2xl p-5 sm:p-6 transition-all"
           >
             <div className="flex items-center gap-2 mb-3">
               <Ban className="w-4 h-4 text-danger" />
@@ -309,10 +313,10 @@ function FeaturesSection() {
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
             whileHover={{ scale: 1.02, borderColor: "rgba(201,146,42,0.5)" }}
-            className="md:col-span-2 bg-charcoal border border-white/10 rounded-2xl p-6 transition-all"
+            className="sm:col-span-2 bg-charcoal border border-white/10 rounded-2xl p-5 sm:p-6 transition-all"
           >
             <h3 className="font-dm font-bold text-white text-lg mb-3">Neighbourhood Intelligence</h3>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { icon: MapPin, label: "Metro", value: "350m" },
                 { icon: Clock, label: "Commute", value: "28 min" },
@@ -462,7 +466,7 @@ function Footer() {
   return (
     <footer className="bg-charcoal py-16">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-4 gap-8 sm:gap-12">
           <div>
             <div className="flex items-center gap-1 mb-4">
               <span className="font-playfair italic text-2xl text-white">griha</span>

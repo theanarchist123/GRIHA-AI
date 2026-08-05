@@ -7,7 +7,7 @@ import {
   Search, FileText, Upload, Eye, Download, Share2, File, Image,
   MessageSquare, Scale, Loader2, AlertTriangle, ShieldCheck, XCircle,
 } from "lucide-react";
-import { DashboardSidebar, DashboardTopBar } from "@/components/shared/Navbar";
+import { DashboardSidebar, DashboardTopBar, MobileSidebarProvider } from "@/components/shared/Navbar";
 
 interface DocumentItem {
   id: string;
@@ -151,18 +151,19 @@ export default function DocumentsPage() {
   }, {});
 
   return (
+    <MobileSidebarProvider>
     <div className="min-h-screen bg-cream">
       <DashboardSidebar />
-      <div className="ml-[260px]">
+      <div className="lg:ml-[260px]">
         <DashboardTopBar />
 
-        <div className="p-6 max-w-5xl">
+        <div className="p-4 sm:p-6 max-w-5xl">
           <h1 className="font-playfair text-3xl text-charcoal mb-6">Documents</h1>
 
           {/* Smart Search */}
-          <div className="bg-surface rounded-2xl border border-border-custom p-6 mb-8">
+          <div className="bg-surface rounded-2xl border border-border-custom p-4 sm:p-6 mb-8">
             <h3 className="font-dm font-semibold text-charcoal text-sm mb-3">Ask anything about your documents</h3>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                 <input
@@ -377,5 +378,6 @@ export default function DocumentsPage() {
         </div>
       )}
     </div>
+    </MobileSidebarProvider>
   );
 }

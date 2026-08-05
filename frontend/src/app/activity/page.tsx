@@ -8,7 +8,7 @@ import {
   Bell, CheckCircle2, MessageSquare, Scale, FileText,
   AlertTriangle, Settings, ArrowRight, Loader2, Sparkles, Filter, MapPin
 } from "lucide-react";
-import { DashboardSidebar, DashboardTopBar } from "@/components/shared/Navbar";
+import { DashboardSidebar, DashboardTopBar, MobileSidebarProvider } from "@/components/shared/Navbar";
 
 interface ActivityItem {
   id: string;
@@ -68,13 +68,14 @@ export default function ActivityPage() {
   ];
 
   return (
+    <MobileSidebarProvider>
     <div className="min-h-screen bg-cream">
       <DashboardSidebar />
-      <div className="ml-[260px]">
+      <div className="lg:ml-[260px]">
         <DashboardTopBar />
 
-        <div className="p-6 max-w-4xl">
-          <div className="flex items-end justify-between mb-8">
+        <div className="p-4 sm:p-6 max-w-4xl">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div>
               <h1 className="font-playfair text-3xl text-charcoal mb-2">Activity Feed</h1>
               <p className="text-muted font-dm">Everything happening with your property search in real-time</p>
@@ -163,5 +164,6 @@ export default function ActivityPage() {
         </div>
       </div>
     </div>
+    </MobileSidebarProvider>
   );
 }

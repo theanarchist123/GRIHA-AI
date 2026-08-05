@@ -188,7 +188,7 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen bg-cream font-sans">
       <DashboardSidebar />
-      <div className="pl-[260px] min-h-screen flex items-center justify-center px-6 py-8">
+      <div className="lg:pl-[260px] min-h-screen flex items-center justify-center px-4 sm:px-6 py-6 sm:py-8">
       <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Left Panel: AI Agent (Takes up 2/3 of space to allow side panel to breathe) */}

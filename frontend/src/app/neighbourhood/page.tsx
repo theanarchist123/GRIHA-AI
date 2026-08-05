@@ -102,24 +102,24 @@ export default function NeighbourhoodDashboardIndex() {
   return (
     <div className="min-h-screen bg-dark-bg text-white flex flex-col font-dm selection:bg-warm-gold/30">
       {/* Top Bar */}
-      <div className="flex items-center justify-between px-8 py-5">
+      <div className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5">
         <Link href="/dashboard" className="flex items-center gap-2 text-muted hover:text-white transition-colors text-sm">
-          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Back to Dashboard</span>
         </Link>
         <Link href="/" className="flex items-center gap-1">
           <span className="font-playfair italic text-xl text-white">griha</span>
           <span className="font-playfair text-xl text-warm-gold font-bold">AI</span>
         </Link>
-        <div className="w-[140px]"></div> {/* Spacer to keep logo centered */}
+        <div className="w-[80px] sm:w-[140px]"></div> {/* Spacer to keep logo centered */}
       </div>
 
       {/* Hero Section */}
-      <div className="flex flex-col items-center justify-center mt-12 mb-16 px-6 text-center">
+      <div className="flex flex-col items-center justify-center mt-8 sm:mt-12 mb-10 sm:mb-16 px-4 sm:px-6 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-warm-gold/40 bg-warm-gold/5 text-warm-gold text-xs font-semibold tracking-wide mb-6">
           <MapPin className="w-3.5 h-3.5" /> AI Neighbourhood Explorer
         </div>
         
-        <h1 className="font-playfair text-5xl md:text-6xl text-white mb-6">
+        <h1 className="font-playfair text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-4 sm:mb-6">
           Explore Your <span className="text-warm-gold">Neighbourhood</span>
         </h1>
         
@@ -143,7 +143,7 @@ export default function NeighbourhoodDashboardIndex() {
       </div>
 
       {/* Grid Section */}
-      <div className="flex-1 px-8 pb-20 max-w-7xl mx-auto w-full">
+      <div className="flex-1 px-4 sm:px-8 pb-20 max-w-7xl mx-auto w-full">
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <Loader2 className="w-10 h-10 text-warm-gold animate-spin" />

@@ -87,7 +87,7 @@ export function PropertyCard({ property, className, isSavedToPipeline = false, i
       whileHover={{ y: -4, boxShadow: "0 12px 40px rgba(0,0,0,0.1)" }}
       transition={{ duration: 0.3, ease: "easeOut" }}
       className={cn(
-        "group bg-surface rounded-2xl overflow-hidden border border-border-custom cursor-pointer min-w-[300px] max-w-[360px]",
+        "group bg-surface rounded-2xl overflow-hidden border border-border-custom cursor-pointer min-w-[260px] sm:min-w-[300px] max-w-[360px] w-full sm:w-auto",
         className
       )}
     >

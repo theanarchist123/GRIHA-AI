@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { DashboardSidebar, DashboardTopBar } from "@/components/shared/Navbar";
+import { DashboardSidebar, DashboardTopBar, MobileSidebarProvider } from "@/components/shared/Navbar";
 import { MapPin, Star, ChevronDown, RefreshCw, Trash2, Sparkles, TrendingDown, Bell } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 
@@ -76,13 +76,14 @@ export default function PriceDropAlertsPage() {
   };
 
   return (
+    <MobileSidebarProvider>
     <div className="min-h-screen bg-cream flex font-sans">
       <DashboardSidebar />
-      <div className="ml-[260px] flex-1 flex flex-col relative">
+      <div className="lg:ml-[260px] flex-1 flex flex-col relative">
         <DashboardTopBar />
 
         {/* Header */}
-        <header className="px-6 py-6 flex items-center justify-between border-b border-border-custom bg-surface sticky top-0 z-10">
+        <header className="px-4 sm:px-6 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-custom bg-surface sticky top-0 z-10">
           <div className="flex items-center justify-between w-full">
             <div>
               <h1 className="text-3xl font-playfair text-charcoal flex items-center gap-3">
@@ -99,8 +100,8 @@ export default function PriceDropAlertsPage() {
         </header>
 
         {/* Stats Row */}
-        <div className="px-6 py-4 flex gap-4 border-b border-border-custom bg-surface">
-            <div className="flex-1 bg-warm-gold/10 p-4 rounded-xl flex items-center gap-4">
+        <div className="px-4 sm:px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-border-custom bg-surface">
+            <div className="bg-warm-gold/10 p-4 rounded-xl flex items-center gap-4">
                 <div className="p-3 bg-white rounded-full shadow-sm text-warm-gold">
                     <Bell size={20} />
                 </div>
@@ -109,7 +110,7 @@ export default function PriceDropAlertsPage() {
                     <p className="text-2xl font-bold text-warm-gold">{alerts.filter(a => a.status !== "triggered").length}</p>
                 </div>
             </div>
-            <div className="flex-1 bg-forest/10 p-4 rounded-xl flex items-center gap-4">
+            <div className="bg-forest/10 p-4 rounded-xl flex items-center gap-4">
                 <div className="p-3 bg-white rounded-full shadow-sm text-forest">
                     <TrendingDown size={20} />
                 </div>
@@ -123,7 +124,7 @@ export default function PriceDropAlertsPage() {
                     </p>
                 </div>
             </div>
-            <div className="flex-1 bg-charcoal/5 p-4 rounded-xl flex items-center gap-4">
+            <div className="bg-charcoal/5 p-4 rounded-xl flex items-center gap-4">
                 <div className="p-3 bg-white rounded-full shadow-sm text-charcoal">
                     <Star size={20} />
                 </div>
@@ -135,7 +136,7 @@ export default function PriceDropAlertsPage() {
         </div>
 
         {/* List Board */}
-        <main className="flex-1 p-6 bg-cream">
+        <main className="flex-1 p-4 sm:p-6 bg-cream">
           <div className="max-w-5xl">
             <h2 className="text-xs font-bold text-muted mb-4 uppercase tracking-wider">
               WATCHING ({alerts.length})
@@ -245,5 +246,6 @@ export default function PriceDropAlertsPage() {
         </div>
       </div>
     </div>
+    </MobileSidebarProvider>
   );
 }
