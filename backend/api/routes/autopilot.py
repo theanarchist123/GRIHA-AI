@@ -57,10 +57,10 @@ async def create_autopilot_hunt(req: CreateHuntRequest):
 
 @router.get("/{clerk_id}")
 async def get_autopilot_hunt(clerk_id: str):
-    hunt = await AutopilotHunt.find_one(
-        AutopilotHunt.clerk_id == clerk_id,
-        AutopilotHunt.status.in_(["active", "paused"])
-    )
+    hunt = await AutopilotHunt.find_one({
+        "clerk_id": clerk_id,
+        "status": {"$in": ["active", "paused"]}
+    })
     if not hunt:
         return {"status": "not_found", "data": None}
     return {"status": "success", "data": _serialize_hunt(hunt)}
