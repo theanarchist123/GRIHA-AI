@@ -56,6 +56,11 @@ export default function AutopilotPage() {
   const [formMaxBudget, setFormMaxBudget] = useState(50000);
   const [formAutoLegal, setFormAutoLegal] = useState(true);
 
+  // Autocomplete state
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
+
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:10000";
 
   useEffect(() => {
@@ -191,15 +196,83 @@ export default function AutopilotPage() {
                   <Settings className="w-5 h-5 text-forest" /> Configure Your Hunt
                 </h3>
                 <div className="space-y-5">
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-dm font-semibold text-charcoal mb-1">Target Locations <span className="text-muted font-normal">(comma separated)</span></label>
                     <input
                       type="text"
                       value={formLocations}
-                      onChange={(e) => setFormLocations(e.target.value)}
+                      onChange={async (e) => {
+                        const val = e.target.value;
+                        setFormLocations(val);
+                        
+                        // Extract the current term being typed after the last comma
+                        const parts = val.split(",");
+                        const currentTerm = parts[parts.length - 1].trim();
+                        
+                        if (currentTerm.length > 2) {
+                          setShowSuggestions(true);
+                          setIsFetchingSuggestions(true);
+                          try {
+                            const res = await fetch(`${apiUrl}/api/locations/autocomplete?q=${encodeURIComponent(currentTerm)}`);
+                            const data = await res.json();
+                            setSuggestions(data || []);
+                          } catch (err) {
+                            console.error("Autocomplete error:", err);
+                          } finally {
+                            setIsFetchingSuggestions(false);
+                          }
+                        } else {
+                          setShowSuggestions(false);
+                        }
+                      }}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                      onFocus={() => {
+                        if (formLocations && formLocations.split(",").pop()?.trim().length! > 2) setShowSuggestions(true);
+                      }}
                       placeholder="e.g. Powai, Andheri West, Bandra"
                       className="w-full px-4 py-2.5 border border-border-custom rounded-xl bg-cream text-charcoal font-dm focus:outline-none focus:ring-2 focus:ring-forest/30"
                     />
+                    
+                    {/* Autocomplete Dropdown */}
+                    <AnimatePresence>
+                      {showSuggestions && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute z-50 w-full mt-2 bg-cream border border-border-custom rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto"
+                        >
+                          {isFetchingSuggestions && suggestions.length === 0 ? (
+                            <div className="px-4 py-3 text-sm font-dm text-muted flex items-center gap-2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-forest"></div>
+                              Loading...
+                            </div>
+                          ) : suggestions.length > 0 ? (
+                            <ul>
+                              {suggestions.map((s, idx) => (
+                                <li
+                                  key={idx}
+                                  onClick={() => {
+                                    const parts = formLocations.split(",");
+                                    parts[parts.length - 1] = " " + s;
+                                    setFormLocations(parts.join(",").trim() + ", ");
+                                    setShowSuggestions(false);
+                                  }}
+                                  className="px-4 py-2.5 hover:bg-forest/10 cursor-pointer font-dm text-charcoal text-sm flex items-center gap-2 border-b border-border-custom/50 last:border-0"
+                                >
+                                  <MapPin className="w-4 h-4 text-forest" />
+                                  {s}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <div className="px-4 py-3 text-sm font-dm text-muted">
+                              No locations found
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
