@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MobileSidebarProvider } from "@/components/shared/MobileSidebar";
-import Sidebar from "@/components/shared/Sidebar";
+import { MobileSidebarProvider, DashboardSidebar } from "@/components/shared/Navbar";
 import { Calendar, MapPin, Clock, CheckCircle, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useUser } from "@clerk/nextjs";
@@ -69,7 +68,7 @@ export default function VisitsPage() {
   return (
     <MobileSidebarProvider>
       <div className="min-h-screen bg-cream flex font-sans">
-        <Sidebar activeItem="visits" />
+        <DashboardSidebar />
         
         <main className="flex-1 lg:pl-64 flex flex-col">
           {/* Header */}
