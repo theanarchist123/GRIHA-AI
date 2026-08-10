@@ -73,3 +73,22 @@ async def cancel_hunt(hunt_id: str):
         hunt.status = "completed"
         await hunt.save()
     return {"status": "success"}
+
+@router.patch("/{hunt_id}/toggle")
+async def toggle_hunt(hunt_id: str):
+    """Pause or resume a hunt."""
+    from beanie import PydanticObjectId
+    hunt = await AutopilotHunt.get(PydanticObjectId(hunt_id))
+    if not hunt:
+        raise HTTPException(status_code=404, detail="Hunt not found")
+    
+    if hunt.status == "active":
+        hunt.status = "paused"
+    elif hunt.status == "paused":
+        hunt.status = "active"
+        hunt.next_run_at = datetime.now(timezone.utc)  # Run immediately on resume
+    else:
+        raise HTTPException(status_code=400, detail=f"Cannot toggle a hunt with status: {hunt.status}")
+    
+    await hunt.save()
+    return {"status": "success", "data": _serialize_hunt(hunt)}

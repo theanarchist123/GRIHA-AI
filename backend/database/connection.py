@@ -14,6 +14,7 @@ from database.models.neighbourhood_report import NeighbourhoodReport
 from database.models.rag_models import LegalCorpus, NeighbourhoodReview
 from database.models.activity_log import ActivityLog
 from database.models.visit import Visit
+from database.models.autopilot import AutopilotHunt
 
 async def init_db():
     # Create Motor client
@@ -35,6 +36,7 @@ async def init_db():
             NeighbourhoodReview,
             ActivityLog,
             Visit,
+            AutopilotHunt,
         ]
     )
     

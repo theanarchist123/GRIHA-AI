@@ -12,6 +12,18 @@ import sys
 from typing import List
 from services.price_monitor import monitor_prices_loop
 from services.visit_monitor import monitor_visits_loop
+from services.autopilot_agent import AutopilotAgent
+
+
+async def monitor_autopilot_loop():
+    """Background loop that runs the autopilot agent every 10 minutes."""
+    agent = AutopilotAgent()
+    while True:
+        try:
+            await agent.run_cycle()
+        except Exception as e:
+            print(f"[Autopilot Loop] Error: {e}")
+        await asyncio.sleep(600)  # Check every 10 minutes
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
@@ -25,6 +37,7 @@ async def lifespan(app: FastAPI):
     # Start background price monitor
     price_monitor_task = asyncio.create_task(monitor_prices_loop())
     visit_monitor_task = asyncio.create_task(monitor_visits_loop())
+    autopilot_task = asyncio.create_task(monitor_autopilot_loop())
     
     yield
     
@@ -32,6 +45,7 @@ async def lifespan(app: FastAPI):
     print("Shutting down Griha AI Backend...")
     price_monitor_task.cancel()
     visit_monitor_task.cancel()
+    autopilot_task.cancel()
 
 app = FastAPI(
     title="Griha AI API",
