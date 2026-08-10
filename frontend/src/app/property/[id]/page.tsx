@@ -28,6 +28,7 @@ import { InvestmentROI } from "@/components/shared/InvestmentROI";
 import { CommuteCalc } from "@/components/shared/CommuteCalc";
 import { SocietyReviews } from "@/components/shared/SocietyReviews";
 import { STATIC_IMAGES } from "@/lib/unsplash";
+import { useProperty } from "@/hooks/useProperty";
 
 import { PropertyMap } from "@/components/shared/PropertyMap";
 
@@ -212,46 +213,14 @@ export default function PropertyDetailPage() {
     if (Array.isArray(value)) return value[0] || "";
     return typeof value === "string" ? value : "";
   }, [params]);
-
-  const [property, setProperty] = useState<Property | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { property: rawProperty, loading, error } = useProperty(propertyId);
+  const property = useMemo(() => {
+    return rawProperty ? normalizeProperty(rawProperty) : null;
+  }, [rawProperty]);
+  
   const [selectedImage, setSelectedImage] = useState(0);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState<string>("");
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadProperty() {
-      if (!propertyId) return;
-      setLoading(true);
-      setError(null);
-
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/${propertyId}`);
-        const json = await res.json();
-        if (!res.ok || json?.status !== "success" || !json?.data) {
-          throw new Error(json?.detail || "Failed to fetch property details.");
-        }
-
-        if (!cancelled) {
-          setProperty(normalizeProperty(json.data));
-        }
-      } catch (err: unknown) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load property details.");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    loadProperty();
-    return () => {
-      cancelled = true;
-    };
-  }, [propertyId]);
 
   if (loading) {
     return (

@@ -9,6 +9,9 @@ import Link from "next/link";
 import soundwavesAnimation from "@/lib/soundwaves.json";
 import { formatPrice } from "@/lib/utils";
 import { DashboardSidebar } from "@/components/shared/Navbar";
+import { useProperty } from "@/hooks/useProperty";
+import { useNegotiation } from "@/hooks/useNegotiation";
+import { ApiClient } from "@/lib/api-client";
 
 // Pass the key to Vapi directly as requested by the user
 const vapi = new Vapi("8fbe3d07-6861-4876-854d-9d79263a5841");
@@ -21,45 +24,22 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
   const [isMuted, setIsMuted] = useState(false);
   const [agentSpeaking, setAgentSpeaking] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  const [property, setProperty] = useState<any>(null);
-  const [strategy, setStrategy] = useState<any>(null);
-  const [negotiationId, setNegotiationId] = useState<string | null>(null);
+  const [property, setProperty] = useState<any>(null); // Kept for simplicity if used elsewhere, but we use hook
+  const { property: hookProperty, loading: propertyLoading } = useProperty(params.id);
+  const { strategy, negotiationId } = useNegotiation(params.id);
+  
   const [emailDraft, setEmailDraft] = useState<string | null>(null);
   const [generatingDraft, setGeneratingDraft] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [transcript, setTranscript] = useState("");
   const [speaker, setSpeaker] = useState<"assistant" | "user" | "">("");
   const [fullTranscript, setFullTranscript] = useState<{role: string, content: string}[]>([]);
   const lottieRef = useRef<LottieRefCurrentProps>(null);
   const propertyRef = useRef<any>(null); // To access property in event listeners
 
-  // Fetch property details on mount
+  // Update property ref when it loads
   useEffect(() => {
-    const fetchProperty = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/properties/${params.id}`);
-        if (res.ok) {
-          const json = await res.json();
-          setProperty(json.data);
-          propertyRef.current = json.data;
-        }
-
-        const negRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/negotiation/property/${params.id}`);
-        if (negRes.ok) {
-          const negJson = await negRes.json();
-          if (negJson.status === "success" && negJson.data) {
-            setStrategy(negJson.strategy);
-            setNegotiationId(negJson.data.id);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch property", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProperty();
-  }, [params.id]);
+    if (hookProperty) propertyRef.current = hookProperty;
+  }, [hookProperty]);
 
   useEffect(() => {
     // Sync Lottie playback speed to agent voice volume in real-time
@@ -113,17 +93,12 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
       setFullTranscript((currentTranscript) => {
         if (currentTranscript.length > 0 && propertyRef.current) {
           const pName = propertyRef.current?.apartmentName || propertyRef.current?.title || "the property";
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/documents/save-transcript`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              property_id: propertyRef.current.id,
-              property_context: pName,
-              clerk_id: user?.id,
-              transcript: currentTranscript
-            })
+          ApiClient.post("/api/documents/save-transcript", {
+            property_id: propertyRef.current.id,
+            property_context: pName,
+            clerk_id: user?.id,
+            transcript: currentTranscript
           })
-          .then(res => res.json())
           .then(data => console.log("Transcript saved:", data))
           .catch(err => console.error("Failed to save transcript:", err));
         }
@@ -159,9 +134,9 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
     } else {
       setConnecting(true);
       try {
-        const pName = property?.apartmentName || property?.title || "the property";
-        const pLoc = property?.locality || property?.city || "the requested location";
-        const pPrice = property?.price ? `₹${property.price}/month` : "the listed price";
+        const pName = hookProperty?.apartmentName || hookProperty?.title || "the property";
+        const pLoc = hookProperty?.locality || hookProperty?.city || "the requested location";
+        const pPrice = hookProperty?.price ? `₹${hookProperty.price}/month` : "the listed price";
         
         await vapi.start("4449c0b9-eed0-4880-badd-9043b3f3889e", {
           firstMessage: `Hi ${userName}! I am the Griha AI broker representing ${pName}. How can I assist you with your negotiation today?`,
@@ -193,10 +168,7 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
     if (!negotiationId) return;
     setGeneratingDraft(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/negotiation/${negotiationId}/email_draft`, {
-        method: "POST"
-      });
-      const json = await res.json();
+      const json = await ApiClient.post(`/api/negotiation/${negotiationId}/email_draft`);
       if (json.draft) {
         setEmailDraft(json.draft);
       }
@@ -207,14 +179,14 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
     }
   };
 
-  if (loading) {
+  if (propertyLoading) {
     return <div className="min-h-screen bg-cream flex items-center justify-center font-sans">Loading...</div>;
   }
 
-  const pName = property?.apartmentName || property?.title || "Property";
-  const pLoc = property?.locality || property?.city || "Location";
-  const pPrice = property?.price ? formatPrice(property.price) : "Price";
-  const pImage = property?.images?.[0] || "";
+  const pName = hookProperty?.apartmentName || hookProperty?.title || "Property";
+  const pLoc = hookProperty?.locality || hookProperty?.city || "Location";
+  const pPrice = hookProperty?.price ? formatPrice(hookProperty.price) : "Price";
+  const pImage = hookProperty?.images?.[0] || "";
 
   return (
     <div className="min-h-screen bg-cream font-sans">
