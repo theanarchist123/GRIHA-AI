@@ -59,15 +59,10 @@ const NAV_ITEMS = [
   { label: "My Matches", href: "/dashboard", icon: Home, badge: 8 },
   { label: "Pipeline", href: "/pipeline", icon: BarChart3 },
   { label: "Price Drop Alerts", href: "/price-drop-alerts", icon: Bell },
-
   { label: "Scheduled Visits", href: "/visits", icon: Calendar },
-  { label: "Legal Checks", href: "/legal/prop-1", icon: Scale },
-  { label: "Negotiations", href: "/negotiate/prop-1", icon: MessageSquare },
   { label: "Market Insights", href: "/market", icon: MapPin },
   { label: "Documents", href: "/documents", icon: FileText },
   { label: "Neighbourhood", href: "/neighbourhood", icon: MapPin },
-  { label: "Activity Feed", href: "/activity", icon: Activity },
-  { label: "Preferences", href: "/preferences", icon: Settings },
 ];
 
 export function DashboardSidebar() {
@@ -331,29 +326,30 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
   return (
     <div className="sticky top-0 z-30 bg-cream/90 backdrop-blur-md border-b border-border-custom">
       <div className="flex items-center px-3 sm:px-6 py-3 min-h-[60px] lg:min-h-[72px] gap-2 sm:gap-4">
-        {/* Mobile hamburger */}
-        <button
-          onClick={mobileSidebar.toggle}
-          className="lg:hidden p-2 text-charcoal hover:bg-sand rounded-xl transition-colors shrink-0"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-
-        {/* Status indicators - hidden on small mobile */}
-        <div className="hidden sm:flex items-center gap-2 lg:gap-4 min-w-0 shrink-0">
-          <div className="flex items-center gap-1.5 bg-surface/50 border border-border-custom px-2 sm:px-3 py-1.5 rounded-full shrink-0">
-            <motion.span
-              className="w-2 h-2 rounded-full bg-success"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <span className="text-[12px] sm:text-[13px] text-charcoal font-dm">
-              <span className="font-bold">1,247</span> <span className="text-muted hidden md:inline">searched</span>
-            </span>
-          </div>
-          <div className="hidden md:flex items-center gap-1.5 bg-forest/5 border border-forest/10 px-3 py-1.5 rounded-full shrink-0">
-            <span className="font-bold text-forest text-[13px]">8</span>
-            <span className="text-forest/70 text-[13px] font-dm">new matches</span>
+        {/* Left side: Hamburger & Status Indicators */}
+        <div className="flex flex-1 items-center gap-2 lg:gap-4 min-w-0">
+          <button
+            onClick={mobileSidebar.toggle}
+            className="lg:hidden p-2 text-charcoal hover:bg-sand rounded-xl transition-colors shrink-0"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          
+          <div className="hidden sm:flex items-center gap-2 lg:gap-4 min-w-0 shrink-0">
+            <div className="flex items-center gap-1.5 bg-surface/50 border border-border-custom px-2 sm:px-3 py-1.5 rounded-full shrink-0">
+              <motion.span
+                className="w-2 h-2 rounded-full bg-success"
+                animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <span className="text-[12px] sm:text-[13px] text-charcoal font-dm">
+                <span className="font-bold">1,247</span> <span className="text-muted hidden md:inline">searched</span>
+              </span>
+            </div>
+            <div className="hidden md:flex items-center gap-1.5 bg-forest/5 border border-forest/10 px-3 py-1.5 rounded-full shrink-0">
+              <span className="font-bold text-forest text-[13px]">8</span>
+              <span className="text-forest/70 text-[13px] font-dm">new matches</span>
+            </div>
           </div>
         </div>
 
@@ -590,9 +586,8 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
         </div>
 
         {/* Right side interactions */}
-        <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0">
+        <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3 shrink-0">
           <NotificationBell />
-          
           <SignedIn>
             <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: "w-9 h-9 sm:w-10 sm:h-10 border-2 border-forest/20" } }} />
           </SignedIn>
@@ -603,9 +598,6 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
               </button>
             </SignInButton>
           </SignedOut>
-          <Link href="/activity" className="p-2 sm:p-2.5 bg-surface border border-border-custom hover:border-forest/50 rounded-xl transition-all hover:shadow-sm">
-            <Activity className="w-4 h-4 text-charcoal" />
-          </Link>
         </div>
       </div>
     </div>

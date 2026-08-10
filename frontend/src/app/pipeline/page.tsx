@@ -5,6 +5,7 @@ import { Search, Filter, Plus, MapPin, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { DashboardSidebar, DashboardTopBar, MobileSidebarProvider } from "@/components/shared/Navbar";
 import { motion } from "framer-motion";
+import { useUser } from "@clerk/nextjs";
 
 type PipelineItem = {
   id: string;
@@ -41,9 +42,14 @@ export default function PipelinePage() {
   // Drag state
   const [draggedItem, setDraggedItem] = useState<{ id: string, sourceCol: string } | null>(null);
 
+  const { user, isLoaded } = useUser();
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+
   useEffect(() => {
-    fetchPipeline();
-  }, []);
+    if (isLoaded) {
+      fetchPipeline();
+    }
+  }, [isLoaded, userEmail]);
 
   const fetchPipeline = async () => {
     try {
@@ -51,7 +57,8 @@ export default function PipelinePage() {
       let retryCount = 0;
       while (retryCount < 3) {
         try {
-          res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/pipeline`);
+          const emailQuery = userEmail ? `?user_email=${encodeURIComponent(userEmail)}` : "";
+          res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/pipeline${emailQuery}`);
           break;
         } catch (err) {
           retryCount++;
