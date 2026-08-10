@@ -36,6 +36,14 @@ class AskQuestionRequest(BaseModel):
     clerk_id: Optional[str] = None
 
 
+class RewriteClauseRequest(BaseModel):
+    clause_text: str
+    risk_level: str
+    problem: str
+    recommendation: str
+    doc_type: str = "rental agreement"
+
+
 @router.post("/upload")
 async def upload_document(
     file: Optional[UploadFile] = File(default=None),
@@ -231,4 +239,46 @@ async def save_transcript(req: SaveTranscriptRequest):
         "status": "success",
         "document_id": str(doc.id),
         "ai_summary": summary,
+    }
+@router.post("/rewrite")
+async def rewrite_clause(req: RewriteClauseRequest):
+    """Rewrite a high-risk clause into a safer version."""
+    try:
+        rewritten = await contract_agent.rewrite_clause(
+            clause_text=req.clause_text,
+            risk_level=req.risk_level,
+            problem=req.problem,
+            recommendation=req.recommendation,
+            doc_type=req.doc_type,
+        )
+        return {"status": "success", "rewritten_clause": rewritten}
+    except Exception as e:
+        raise HTTPException(500, f"Failed to rewrite clause: {str(e)}")
+
+
+@router.get("/templates")
+async def get_templates():
+    """Returns standard legal templates."""
+    return {
+        "status": "success",
+        "data": [
+            {
+                "id": "leave-license-mh",
+                "title": "Leave and License Agreement (Maharashtra)",
+                "description": "Standard 11-month Leave & License agreement compliant with Maharashtra Rent Control Act.",
+                "type": "rental_agreement"
+            },
+            {
+                "id": "rental-agreement-standard",
+                "title": "Standard Rental Agreement",
+                "description": "Generic Indian rental agreement suitable for most states.",
+                "type": "rental_agreement"
+            },
+            {
+                "id": "commercial-lease",
+                "title": "Commercial Lease Agreement",
+                "description": "Standard lease for commercial shops and office spaces.",
+                "type": "lease_agreement"
+            }
+        ]
     }

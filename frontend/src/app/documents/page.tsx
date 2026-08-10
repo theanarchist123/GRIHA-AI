@@ -49,11 +49,25 @@ export default function DocumentsPage() {
   const [aiAnswer, setAiAnswer] = useState("");
   const [askingAI, setAskingAI] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [templates, setTemplates] = useState<any[]>([]);
   const [selectedTranscript, setSelectedTranscript] = useState<{title: string, summary: string, messages: any[]} | null>(null);
 
   useEffect(() => {
     fetchDocuments();
+    fetchTemplates();
   }, []);
+
+  async function fetchTemplates() {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/documents/templates`);
+      const json = await res.json();
+      if (json.status === "success") {
+        setTemplates(json.data || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch templates:", err);
+    }
+  }
 
   async function fetchDocuments() {
     setLoading(true);
@@ -271,9 +285,9 @@ export default function DocumentsPage() {
                             <MessageSquare className="w-3 h-3" /> View Transcript
                           </button>
                         ) : (
-                          <button className="flex items-center gap-1 text-xs text-forest font-dm font-semibold hover:underline">
+                          <Link href={`/documents/${doc.id}`} className="flex items-center gap-1 text-xs text-forest font-dm font-semibold hover:underline">
                             <Eye className="w-3 h-3" /> View
-                          </button>
+                          </Link>
                         )}
                         <button className="flex items-center gap-1 text-xs text-forest font-dm font-semibold hover:underline">
                           <Download className="w-3 h-3" /> Download
@@ -328,6 +342,36 @@ export default function DocumentsPage() {
               )}
             </label>
           </div>
+          
+          {/* Templates Section */}
+          {!loading && templates.length > 0 && (
+            <div className="mt-12">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="w-5 h-5 text-warm-gold" />
+                <h2 className="font-dm font-bold text-charcoal text-lg">Standard Legal Templates</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {templates.map((tpl, i) => (
+                  <motion.div
+                    key={tpl.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-surface rounded-xl border border-border-custom p-5 hover:shadow-md transition-shadow flex flex-col"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-warm-gold/10 flex items-center justify-center shrink-0 mb-3">
+                      <Scale className="w-5 h-5 text-warm-gold" />
+                    </div>
+                    <h3 className="font-dm font-bold text-charcoal text-sm mb-2">{tpl.title}</h3>
+                    <p className="text-xs text-muted mb-4 flex-1">{tpl.description}</p>
+                    <button className="flex justify-center items-center gap-2 py-2 w-full bg-cream hover:bg-border-custom/50 rounded-lg text-xs font-dm font-semibold text-charcoal transition-colors">
+                      <Download className="w-3 h-3" /> Download Template
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

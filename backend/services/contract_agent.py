@@ -203,6 +203,26 @@ Return ONLY valid JSON. No markdown.
 
         return analyzed
 
+    async def rewrite_clause(self, clause_text: str, risk_level: str, problem: str, recommendation: str, doc_type: str = "rental agreement") -> str:
+        """Rewrite a high-risk clause into a safer, standard version."""
+        prompt = f"""You are a top-tier Indian real estate lawyer. Rewrite the following high-risk clause from a {doc_type} into a standard, balanced, and legally sound clause under Indian law (specifically the Transfer of Property Act or local Rent Control Acts where applicable).
+
+Original Clause:
+"{clause_text}"
+
+Identified Risk Level: {risk_level}
+Identified Problem: {problem}
+Recommendation: {recommendation}
+
+Please provide the revised clause only. Make it professional, clear, and fair to both parties. Do not include any introductory text or markdown formatting like ``` or backticks.
+"""
+        try:
+            response = await self.model_pro.generate_content_async(prompt)
+            return response.text.strip()
+        except Exception as e:
+            print(f"[ContractAgent] Clause rewrite error: {e}")
+            return f"Error: Could not rewrite clause. {e}"
+
     # ──────────────── AI Summary ────────────────
 
     async def generate_summary(self, text: str, doc_type: str, clause_analysis: List[Dict]) -> str:
