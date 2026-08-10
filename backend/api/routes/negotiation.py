@@ -170,6 +170,35 @@ async def update_negotiation_settings(negotiation_id: str, req: SettingsUpdateRe
     return {"status": "success", "message": "Settings updated"}
 
 
+@router.post("/{negotiation_id}/email_draft")
+async def generate_email_draft(negotiation_id: str, request: Request):
+    """Generate a closing email draft for a won negotiation."""
+    if not ObjectId.is_valid(negotiation_id):
+        raise HTTPException(400, "Invalid negotiation ID")
+
+    neg = await Negotiation.get(ObjectId(negotiation_id))
+    if not neg:
+        raise HTTPException(404, "Negotiation not found")
+        
+    prop = await Property.get(neg.property) if neg else None
+    if not prop:
+        raise HTTPException(404, "Property not found")
+        
+    # Get user details if they exist
+    user_details = {"name": "Tenant", "email": ""}
+    if neg.user:
+        user = await User.get(neg.user)
+        if user:
+            user_details["name"] = f"{user.first_name} {user.last_name}".strip() or "Tenant"
+            user_details["email"] = user.email or ""
+
+    try:
+        draft = await negotiation_agent.generate_closing_email(neg, prop, user_details)
+        return {"status": "success", "draft": draft}
+    except Exception as e:
+        raise HTTPException(500, f"Failed to generate draft: {str(e)}")
+
+
 def _serialize_negotiation(neg: Negotiation, prop: Optional[Property] = None) -> dict:
     """Serialize negotiation for API response."""
     messages = []

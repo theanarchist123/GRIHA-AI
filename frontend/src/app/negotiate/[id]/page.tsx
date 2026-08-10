@@ -22,6 +22,10 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
   const [agentSpeaking, setAgentSpeaking] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [property, setProperty] = useState<any>(null);
+  const [strategy, setStrategy] = useState<any>(null);
+  const [negotiationId, setNegotiationId] = useState<string | null>(null);
+  const [emailDraft, setEmailDraft] = useState<string | null>(null);
+  const [generatingDraft, setGeneratingDraft] = useState(false);
   const [loading, setLoading] = useState(true);
   const [transcript, setTranscript] = useState("");
   const [speaker, setSpeaker] = useState<"assistant" | "user" | "">("");
@@ -38,6 +42,15 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
           const json = await res.json();
           setProperty(json.data);
           propertyRef.current = json.data;
+        }
+
+        const negRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/negotiation/property/${params.id}`);
+        if (negRes.ok) {
+          const negJson = await negRes.json();
+          if (negJson.status === "success" && negJson.data) {
+            setStrategy(negJson.strategy);
+            setNegotiationId(negJson.data.id);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch property", err);
@@ -174,6 +187,24 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
     vapi.setMuted(nextMuted);
+  };
+
+  const handleGenerateDraft = async () => {
+    if (!negotiationId) return;
+    setGeneratingDraft(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/negotiation/${negotiationId}/email_draft`, {
+        method: "POST"
+      });
+      const json = await res.json();
+      if (json.draft) {
+        setEmailDraft(json.draft);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGeneratingDraft(false);
+    }
   };
 
   if (loading) {
@@ -322,6 +353,58 @@ export default function NegotiatePage({ params }: { params: { id: string } }) {
               </Link>
             </div>
           </div>
+          
+          {/* Box 4: Strategy & Success Probability */}
+          {strategy && (
+            <div className="bg-white rounded-2xl p-6 border border-charcoal/10 shadow-sm flex flex-col">
+              <h3 className="font-dm font-bold text-charcoal text-sm uppercase tracking-wider mb-4 border-b pb-2">Negotiation Strategy</h3>
+              
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-dm text-muted uppercase">Success Probability</span>
+                  <span className="text-xs font-bold text-charcoal">{strategy.success_probability}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full ${strategy.success_probability > 70 ? 'bg-forest' : strategy.success_probability > 40 ? 'bg-warm-gold' : 'bg-red-500'}`} style={{ width: `${strategy.success_probability}%` }}></div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <span className="w-2 h-2 rounded-full bg-charcoal"></span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted uppercase tracking-wider">Turns Taken</p>
+                    <p className="font-medium text-sm text-charcoal">{strategy.turn_count} rounds</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <span className="w-2 h-2 rounded-full bg-charcoal"></span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted uppercase tracking-wider">Broker Sentiment</p>
+                    <p className="font-medium text-sm text-charcoal capitalize">{strategy.sentiment_trend}</p>
+                  </div>
+                </div>
+              </div>
+              
+              {!emailDraft ? (
+                <button 
+                  onClick={handleGenerateDraft}
+                  disabled={generatingDraft}
+                  className="mt-6 w-full py-2.5 rounded-xl border border-charcoal/20 text-charcoal font-dm text-sm font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  {generatingDraft ? "Drafting..." : "Generate Closing Email"}
+                </button>
+              ) : (
+                <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-200 text-xs text-charcoal whitespace-pre-wrap font-mono">
+                  {emailDraft}
+                </div>
+              )}
+            </div>
+          )}
           
         </div>
       </div>

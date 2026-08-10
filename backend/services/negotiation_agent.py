@@ -505,6 +505,18 @@ Write a natural response (2-4 sentences). Reference the broker's last message. S
         else:
             progress = 50
 
+        # Success Probability
+        success_probability = 50
+        if sentiment_trend == "improving":
+            success_probability += 25
+        elif sentiment_trend == "uncertain":
+            success_probability -= 10
+        if progress > 75:
+            success_probability += 15
+        elif progress > 40:
+            success_probability += 5
+        success_probability = min(95, max(15, success_probability))
+
         return {
             "fair_value_min": negotiation.market_fair_value_min or int(prop.price * 0.82),
             "fair_value_max": negotiation.market_fair_value_max or int(prop.price * 0.93),
@@ -513,5 +525,27 @@ Write a natural response (2-4 sentences). Reference the broker's last message. S
             "sentiment_trend": sentiment_trend,
             "leverage_points": leverage,
             "progress_percent": progress,
+            "success_probability": success_probability,
             "turn_count": negotiation.turn_count,
         }
+
+    async def generate_closing_email(self, negotiation: Negotiation, prop: Property, user_details: dict) -> str:
+        """Generate a professional closing email for the deal."""
+        agreed_price = negotiation.current_offer or prop.price
+        
+        prompt = f"""You are a professional Indian real estate assistant. Write a formal closing email to the broker/owner to finalize a rental agreement.
+        
+Property: {prop.bhk} in {prop.apartment_name or prop.locality}, {prop.city}
+Agreed Rent: ₹{agreed_price:,}/month
+Tenant Name: {user_details.get('name', 'Tenant')}
+Tenant Email: {user_details.get('email', '')}
+
+Write a 3-paragraph email confirming the agreed rent, expressing excitement to move in, and requesting the draft lease agreement and token deposit details. Use a polite and professional tone.
+Do not use markdown formatting.
+"""
+        try:
+            response = await self.model_pro.generate_content_async(prompt)
+            return response.text.strip()
+        except Exception as e:
+            print(f"[NegotiationAgent] Failed to generate email: {e}")
+            return f"Subject: Confirmation of Rental Agreement - {prop.bhk} in {prop.locality}\n\nDear Broker/Owner,\n\nI am writing to formally confirm our agreement for the rental of the {prop.bhk} in {prop.locality} at the agreed monthly rent of ₹{agreed_price:,}.\n\nPlease share the draft lease agreement and details for the token deposit at your earliest convenience.\n\nBest regards,\n{user_details.get('name', 'Tenant')}"
