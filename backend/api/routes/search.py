@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 from database.models.search_profile import SearchProfile
 from database.models.user import User
 import json
-from google import genai
+import google.generativeai as genai
 from config import settings
 
 router = APIRouter(prefix="/api/search", tags=["Search"])
@@ -80,11 +80,9 @@ Return a JSON object with the following keys (use null/empty if not specified):
 Respond ONLY with valid JSON. Do not include markdown formatting or backticks.
 """
     try:
-        client = genai.Client(api_key=settings.gemini_api_key)
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-        )
+        genai.configure(api_key=settings.gemini_api_key)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
         
         # Clean up possible markdown
         text = response.text.strip()
