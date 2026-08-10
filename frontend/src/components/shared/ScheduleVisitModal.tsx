@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Clock, X, CalendarPlus } from "lucide-react";
+import { Calendar, Clock, X, CalendarPlus, Loader2 } from "lucide-react";
 
 interface ScheduleVisitModalProps {
   isOpen: boolean;

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useUser } from "@clerk/nextjs";
 import {
   ArrowLeft,
   Building2,
@@ -203,6 +204,8 @@ function deriveNegotiationTips(property: Property): string {
 }
 
 export default function PropertyDetailPage() {
+  const { user } = useUser();
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
   const params = useParams();
   const propertyId = useMemo(() => {
     const value = params?.id;
