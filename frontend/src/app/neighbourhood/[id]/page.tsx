@@ -39,6 +39,9 @@ export default function NeighbourhoodPage() {
     center: null,
     markers: []
   });
+  
+  const [aqiData, setAqiData] = useState<any>(null);
+  const [walkScoreData, setWalkScoreData] = useState<any>(null);
 
   useEffect(() => {
     if (!propertyId) return;
@@ -68,6 +71,20 @@ export default function NeighbourhoodPage() {
               markers: []
             });
           }
+          
+          // Fetch AQI and WalkScore
+          const locality = prop.locality || prop.city || "Mumbai";
+          
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/neighbourhood/aqi/${locality}`)
+            .then(res => res.json())
+            .then(d => { if (d.status === "success") setAqiData(d.data); })
+            .catch(err => console.error("AQI fetch error", err));
+            
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/neighbourhood/walkscore/${locality}`)
+            .then(res => res.json())
+            .then(d => { if (d.status === "success") setWalkScoreData(d.data); })
+            .catch(err => console.error("WalkScore fetch error", err));
+
         } else {
           setError("Property not found");
         }
@@ -132,11 +149,34 @@ export default function NeighbourhoodPage() {
             </div>
           )}
           
-          <div className="absolute top-4 left-4 z-[400] bg-dark-bg/90 backdrop-blur-md px-4 py-2 rounded-xl border border-dark-border shadow-lg">
-            <div className="flex items-center gap-2 text-sm font-dm text-white">
-              <MapPin className="w-4 h-4 text-warm-gold" />
-              <span className="font-semibold truncate max-w-xs">{mapState.center?.address || "Loading location..."}</span>
+          <div className="absolute top-4 left-4 z-[400] flex flex-col gap-2">
+            <div className="bg-dark-bg/90 backdrop-blur-md px-4 py-2 rounded-xl border border-dark-border shadow-lg">
+              <div className="flex items-center gap-2 text-sm font-dm text-white">
+                <MapPin className="w-4 h-4 text-warm-gold" />
+                <span className="font-semibold truncate max-w-xs">{mapState.center?.address || "Loading location..."}</span>
+              </div>
             </div>
+            
+            {aqiData && (
+              <div className="bg-dark-bg/90 backdrop-blur-md px-4 py-3 rounded-xl border border-dark-border shadow-lg w-48">
+                <p className="text-[10px] uppercase tracking-wider text-dark-text mb-1 font-bold">Air Quality</p>
+                <div className="flex items-end gap-2">
+                  <span className={`text-2xl font-bold font-dm ${aqiData.status === 'Good' ? 'text-success' : aqiData.status === 'Moderate' ? 'text-warm-gold' : 'text-danger'}`}>{aqiData.aqi}</span>
+                  <span className="text-xs text-white pb-1">{aqiData.status}</span>
+                </div>
+              </div>
+            )}
+            
+            {walkScoreData && (
+              <div className="bg-dark-bg/90 backdrop-blur-md px-4 py-3 rounded-xl border border-dark-border shadow-lg w-48">
+                <p className="text-[10px] uppercase tracking-wider text-dark-text mb-1 font-bold">Walkability</p>
+                <div className="flex items-end gap-2">
+                  <span className="text-2xl font-bold font-dm text-forest-light">{walkScoreData.score}</span>
+                  <span className="text-xs text-white pb-1">/ 100</span>
+                </div>
+                <p className="text-xs text-dark-text mt-1">{walkScoreData.description}</p>
+              </div>
+            )}
           </div>
         </div>
 
