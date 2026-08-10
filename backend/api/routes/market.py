@@ -26,7 +26,7 @@ async def get_market_heatmap():
         },
         {
             "$match": {
-                "property_count": {"$gte": 2} # Only include localities with at least 2 properties
+                "property_count": {"$gte": 1} # Include all localities for demo purposes
             }
         },
         {

@@ -4,6 +4,7 @@ from database.mongo import db
 from database.models.visit import Visit
 from database.models.property import Property
 from services.email_service import EmailService
+from database.models.notification import Notification
 from services.whatsapp_service import WhatsAppService
 from config import settings
 from bson import ObjectId
@@ -55,6 +56,19 @@ async def monitor_visits_loop():
                     )
                 except Exception as e:
                     print(f"Failed to send email reminder: {e}")
+                
+                # In-app notification
+                notif = Notification(
+                    clerk_id=visit.clerk_id,
+                    type="visit_reminder",
+                    title="Upcoming Visit Tomorrow",
+                    message=f"You have a visit scheduled for {prop.title} on {visit.date.strftime('%Y-%m-%d')} at {visit.time_slot}",
+                    priority="high",
+                    action_url=f"/visits"
+                )
+                await notif.insert()
+                
+                print(f"[Visit Monitor] Sent reminder for visit {visit.id}")
                 
                 # Update visit to mark reminder sent
                 visit.reminder_sent = True

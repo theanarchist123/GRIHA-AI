@@ -10,10 +10,12 @@ interface ScheduleVisitModalProps {
   propertyTitle: string;
   propertyAddress: string;
   propertyId: string;
+  propertyImage?: string;
+  propertyPrice?: number;
   userEmail: string;
 }
 
-export function ScheduleVisitModal({ isOpen, onClose, propertyTitle, propertyAddress, propertyId, userEmail }: ScheduleVisitModalProps) {
+export function ScheduleVisitModal({ isOpen, onClose, propertyTitle, propertyAddress, propertyId, propertyImage, propertyPrice, userEmail }: ScheduleVisitModalProps) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,6 +36,10 @@ export function ScheduleVisitModal({ isOpen, onClose, propertyTitle, propertyAdd
         },
         body: JSON.stringify({
           property_id: propertyId,
+          property_title: propertyTitle,
+          property_image: propertyImage,
+          property_price: propertyPrice,
+          property_location: propertyAddress,
           user_email: userEmail,
           date: `${date}T00:00:00Z`,
           time_slot: time,

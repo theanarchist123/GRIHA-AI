@@ -5,6 +5,7 @@ import re
 from bson import ObjectId
 from config import settings
 from services.email_service import EmailService
+from database.models.notification import Notification
 from services.whatsapp_service import WhatsAppService
 
 email_service = EmailService()
@@ -61,6 +62,18 @@ async def monitor_prices_loop():
                             target_price=target_val,
                             property_url=property_url
                         )
+
+                        # In-app notification
+                        if user_id:
+                            notif = Notification(
+                                clerk_id=user_id,
+                                type="price_drop",
+                                title="Price Drop Alert! 📉",
+                                message=f"The price of {live_prop.title} has dropped to {live_prop.price}",
+                                priority="high",
+                                action_url=f"/property/{property_id}"
+                            )
+                            await notif.insert()
                         
                         # Send WhatsApp if configured
                         whatsapp_number = alert.get("whatsapp_number")

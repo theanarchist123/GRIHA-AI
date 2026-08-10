@@ -559,6 +559,8 @@ export default function PropertyDetailPage() {
         propertyTitle={heading}
         propertyAddress={`${property.address}, ${property.city}`}
         propertyId={propertyId as string}
+        propertyImage={property.images[0]}
+        propertyPrice={property.price}
         userEmail={userEmail || "guest@example.com"}
       />
     </div>

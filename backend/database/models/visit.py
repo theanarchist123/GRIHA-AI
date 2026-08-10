@@ -5,7 +5,12 @@ from typing import Optional
 from database.models.property import Property
 
 class Visit(Document):
-    property: Link[Property]
+    property_id: str
+    property_title: str
+    property_image: Optional[str] = None
+    property_price: Optional[float] = None
+    property_location: Optional[str] = None
+    
     user_email: str
     date: datetime
     time_slot: str

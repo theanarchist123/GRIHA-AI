@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect, createContext, useContext } from "react";
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
+import { NotificationBell } from "./NotificationBell";
 import {
   Home,
   Search,
@@ -134,6 +135,7 @@ export function DashboardSidebar() {
       <div className="px-4 py-4 border-t border-border-custom">
         <SignedIn>
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <UserButton afterSignOutUrl="/sign-in" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-charcoal truncate">{displayName}</p>

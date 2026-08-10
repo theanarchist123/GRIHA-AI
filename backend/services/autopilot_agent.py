@@ -12,6 +12,7 @@ from typing import List, Optional
 from database.models.autopilot import AutopilotHunt, AutopilotRun, AutopilotMatch
 from database.models.property import Property
 from database.models.search_profile import SearchProfile
+from database.models.notification import Notification
 from services.matching_agent import MatchingAgent
 from services.legal_agent import LegalAgent
 from services.email_service import EmailService
@@ -139,7 +140,7 @@ class AutopilotAgent:
             
             await self._save_run(hunt, run)
             
-            # Log activity
+            # Log activity and notify
             if new_matches_count > 0:
                 await log_activity(
                     user_id=hunt.clerk_id,
@@ -148,6 +149,16 @@ class AutopilotAgent:
                     action_label="View",
                     action_href="/autopilot",
                 )
+                
+                notif = Notification(
+                    clerk_id=hunt.clerk_id,
+                    type="match_found",
+                    title="Autopilot Match Found ✨",
+                    message=f"Found {new_matches_count} new matching propert{'ies' if new_matches_count > 1 else 'y'} for your hunt.",
+                    priority="normal",
+                    action_url="/autopilot"
+                )
+                await notif.insert()
             
             return run
             

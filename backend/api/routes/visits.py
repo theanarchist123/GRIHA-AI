@@ -10,6 +10,10 @@ router = APIRouter(prefix="/api/visits", tags=["Visits"])
 
 class VisitCreate(BaseModel):
     property_id: str
+    property_title: str
+    property_image: Optional[str] = None
+    property_price: Optional[float] = None
+    property_location: Optional[str] = None
     user_email: str
     date: datetime
     time_slot: str
@@ -23,15 +27,12 @@ class VisitUpdate(BaseModel):
 
 @router.post("/")
 async def schedule_visit(req: VisitCreate):
-    if not ObjectId.is_valid(req.property_id):
-        raise HTTPException(status_code=400, detail="Invalid property ID")
-        
-    prop = await Property.get(ObjectId(req.property_id))
-    if not prop:
-        raise HTTPException(status_code=404, detail="Property not found")
-        
     visit = Visit(
-        property=prop,
+        property_id=req.property_id,
+        property_title=req.property_title,
+        property_image=req.property_image,
+        property_price=req.property_price,
+        property_location=req.property_location,
         user_email=req.user_email,
         date=req.date,
         time_slot=req.time_slot,
@@ -47,15 +48,13 @@ async def list_visits(user_email: str):
     
     result = []
     for v in visits:
-        await v.fetch_link(Visit.property)
-        prop = v.property
         result.append({
             "id": str(v.id),
-            "property_id": str(prop.id) if prop else None,
-            "property_title": prop.title if prop else "Unknown Property",
-            "property_image": prop.images[0] if prop and prop.images else None,
-            "property_price": prop.price if prop else None,
-            "property_location": prop.locality if prop else None,
+            "property_id": v.property_id,
+            "property_title": v.property_title,
+            "property_image": v.property_image,
+            "property_price": v.property_price,
+            "property_location": v.property_location,
             "date": v.date.isoformat(),
             "time_slot": v.time_slot,
             "status": v.status,
