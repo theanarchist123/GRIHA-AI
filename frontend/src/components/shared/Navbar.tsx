@@ -25,6 +25,7 @@ import {
   X,
   Zap,
   Calendar,
+  Sparkles,
 } from "lucide-react";
 
 // Context so pages can control sidebar open state
