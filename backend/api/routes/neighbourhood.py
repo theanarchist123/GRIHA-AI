@@ -125,8 +125,7 @@ async def get_neighbourhood_report(
             "livability_scores": report.livability_scores,
             "cached_at": report.cached_at.isoformat() if report.cached_at else None,
             "expires_at": report.expires_at.isoformat() if report.expires_at else None,
-        },
-        },
+        }
     }
 
 @router.get("/aqi/{locality}")

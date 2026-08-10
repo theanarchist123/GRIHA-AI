@@ -19,3 +19,4 @@ beautifulsoup4
 lxml  
 pymongo<4.11.0
 slowapi
+reportlab
