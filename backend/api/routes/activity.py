@@ -3,7 +3,7 @@ Activity Feed API Routes — Real activity log from MongoDB.
 """
 from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Optional
-from database.connection import get_db
+from database.mongo import get_db
 from database.models.activity_log import ActivityLog
 
 router = APIRouter(prefix="/api/activity", tags=["Activity"])
