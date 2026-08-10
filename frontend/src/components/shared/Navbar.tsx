@@ -59,7 +59,7 @@ const NAV_ITEMS = [
   { label: "My Matches", href: "/dashboard", icon: Home, badge: 8 },
   { label: "Pipeline", href: "/pipeline", icon: BarChart3 },
   { label: "Price Drop Alerts", href: "/price-drop-alerts", icon: Bell },
-  { label: "Autopilot Hunt", href: "/autopilot", icon: Zap },
+
   { label: "Scheduled Visits", href: "/visits", icon: Calendar },
   { label: "Legal Checks", href: "/legal/prop-1", icon: Scale },
   { label: "Negotiations", href: "/negotiate/prop-1", icon: MessageSquare },

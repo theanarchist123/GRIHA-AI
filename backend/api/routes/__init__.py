@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from . import locations, search, auth, properties, ws, negotiation, documents, legal, neighbourhood, preferences, activity, pipeline, alerts, visits, market, autopilot, notifications
+from . import locations, search, auth, properties, ws, negotiation, documents, legal, neighbourhood, preferences, activity, pipeline, alerts, visits, market, notifications
 
 router = APIRouter()
 router.include_router(locations.router)
@@ -17,6 +17,5 @@ router.include_router(pipeline.router)
 router.include_router(alerts.router)
 router.include_router(visits.router)
 router.include_router(market.router)
-router.include_router(autopilot.router)
 router.include_router(notifications.router)
 # We will export the combined router to main.py

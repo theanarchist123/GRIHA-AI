@@ -14,7 +14,7 @@ from database.models.neighbourhood_report import NeighbourhoodReport
 from database.models.rag_models import LegalCorpus, NeighbourhoodReview
 from database.models.activity_log import ActivityLog
 from database.models.visit import Visit
-from database.models.autopilot import AutopilotHunt
+
 from database.models.notification import Notification
 
 async def init_db():
@@ -37,7 +37,6 @@ async def init_db():
             NeighbourhoodReview,
             ActivityLog,
             Visit,
-            AutopilotHunt,
             Notification,
         ]
     )
