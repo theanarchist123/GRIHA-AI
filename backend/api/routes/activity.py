@@ -28,14 +28,11 @@ async def get_activity_feed(
         query_filters.append({"type": type_filter})
 
     if query_filters:
-        from motor.motor_asyncio import AsyncIOMotorClient
-        # Use Beanie's find with raw filter
-        total = await ActivityLog.find(
-            *[ActivityLog.type == type_filter] if type_filter and type_filter != "all" else []
-        ).count()
-        activities = await ActivityLog.find(
-            *[ActivityLog.type == type_filter] if type_filter and type_filter != "all" else []
-        ).sort(-ActivityLog.created_at).skip(skip).limit(limit).to_list()
+        raw_query = {"$and": query_filters}
+        total = await ActivityLog.find(raw_query).count()
+        activities = await ActivityLog.find(raw_query).sort(
+            -ActivityLog.created_at
+        ).skip(skip).limit(limit).to_list()
     else:
         total = await ActivityLog.find().count()
         activities = await ActivityLog.find().sort(

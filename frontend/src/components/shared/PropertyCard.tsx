@@ -37,7 +37,7 @@ export function PropertyCard({ property, className, isSavedToPipeline = false, i
     e.preventDefault();
     if (savedToPipeline) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/pipeline`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/pipeline/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -61,7 +61,7 @@ export function PropertyCard({ property, className, isSavedToPipeline = false, i
     if (savedToAlerts) return;
     try {
       const user_email = user?.primaryEmailAddress?.emailAddress || "guest@example.com";
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/alerts`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/alerts/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -95,8 +95,8 @@ export function PropertyCard({ property, className, isSavedToPipeline = false, i
         {/* Image section - 60% */}
         <div className="relative h-[220px] overflow-hidden">
           <img
-            src={property.images[0]}
-            alt={property.address}
+            src={property.images?.[0] || STATIC_IMAGES.apartment1}
+            alt={property.address || "Property"}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {/* Action Buttons */}
@@ -121,10 +121,10 @@ export function PropertyCard({ property, className, isSavedToPipeline = false, i
             {property.matchScore}% Match
           </div>
           {/* Red Flag Badge */}
-          {property.photoRedFlags.length > 0 && (
+          {(property.photoRedFlags?.length || 0) > 0 && (
             <div className="absolute top-14 left-3 bg-warm-gold text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" />
-              {property.photoRedFlags.length} Flag{property.photoRedFlags.length > 1 ? "s" : ""}
+              {property.photoRedFlags?.length || 0} Flag{(property.photoRedFlags?.length || 0) > 1 ? "s" : ""}
             </div>
           )}
         </div>

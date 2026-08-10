@@ -131,27 +131,6 @@ export function DashboardSidebar() {
           );
         })}
       </nav>
-
-      {/* User section at bottom */}
-      <div className="px-4 py-4 border-t border-border-custom">
-        <SignedIn>
-          <div className="flex items-center gap-3">
-            <NotificationBell />
-            <UserButton afterSignOutUrl="/sign-in" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-charcoal truncate">{displayName}</p>
-              <p className="text-xs text-warm-gold font-medium">Signed in with Clerk</p>
-            </div>
-          </div>
-        </SignedIn>
-        <SignedOut>
-          <SignInButton mode="modal">
-            <button className="w-full rounded-xl bg-forest text-white text-sm font-semibold px-3 py-2 hover:bg-forest-light transition-colors">
-              Sign in
-            </button>
-          </SignInButton>
-        </SignedOut>
-      </div>
     </>
   );
 
@@ -612,10 +591,18 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
 
         {/* Right side interactions */}
         <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0">
-          <button className="relative p-2 sm:p-2.5 bg-surface border border-border-custom hover:border-forest/50 rounded-xl transition-all hover:shadow-sm">
-            <Bell className="w-4 h-4 text-charcoal" />
-            <span className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 w-2 h-2 bg-danger border border-white rounded-full" />
-          </button>
+          <NotificationBell />
+          
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: "w-9 h-9 sm:w-10 sm:h-10 border-2 border-forest/20" } }} />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="px-4 py-2 bg-forest text-white rounded-xl font-dm text-sm font-semibold hover:bg-forest-light transition-colors">
+                Sign in
+              </button>
+            </SignInButton>
+          </SignedOut>
           <Link href="/activity" className="p-2 sm:p-2.5 bg-surface border border-border-custom hover:border-forest/50 rounded-xl transition-all hover:shadow-sm">
             <Activity className="w-4 h-4 text-charcoal" />
           </Link>
