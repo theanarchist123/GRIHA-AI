@@ -214,10 +214,12 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
     parking: false,
   });
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locationStatus, setLocationStatus] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
+  const [aiMode, setAiMode] = useState(false);
+  const [aiQuery, setAiQuery] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
     if (filters) setDraftFilters(filters);
@@ -393,26 +395,45 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
             {/* The collapsed view / Search Input row */}
             <div className="flex items-center px-2 py-1.5 h-10 sm:h-12">
               <div className="flex-1 flex items-center px-2 sm:px-3 relative">
-                <Search className="w-4 h-4 text-muted mr-2 sm:mr-3 shrink-0" />
-                <input
-                  id="location-search"
-                  name="location-search"
-                  type="text"
-                  placeholder="Where do you want to live?"
-                  value={draftFilters.location}
-                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, location: e.target.value }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      applyFilters();
-                    }
-                  }}
-                  className="w-full bg-transparent text-sm font-dm focus:outline-none text-charcoal"
-                  autoComplete="off"
-                />
+                  <div className="w-full bg-transparent text-sm font-dm focus:outline-none text-charcoal flex items-center">
+                    {aiMode ? (
+                      <input
+                        type="text"
+                        placeholder="Describe your ideal home (e.g. 2 BHK in Bandra under 1L with gym)"
+                        value={aiQuery}
+                        onChange={(e) => setAiQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAiSearch();
+                          }
+                        }}
+                        className="w-full bg-transparent outline-none placeholder:text-muted"
+                        autoFocus
+                      />
+                    ) : (
+                      <input
+                        id="location-search"
+                        name="location-search"
+                        type="text"
+                        placeholder="Where do you want to live?"
+                        value={draftFilters.location}
+                        onChange={(e) => setDraftFilters((prev) => ({ ...prev, location: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            applyFilters();
+                          }
+                        }}
+                        className="w-full bg-transparent outline-none placeholder:text-muted"
+                        autoComplete="off"
+                      />
+                    )}
+                  </div>
 
-                {isSearchExpanded && (locationSuggestions.length > 0 || loadingSuggestions) && (
+                {!aiMode && isSearchExpanded && (locationSuggestions.length > 0 || loadingSuggestions) && (
                   <div className="absolute left-0 right-0 top-full mt-2 z-50 bg-surface border border-border-custom rounded-xl shadow-lg overflow-hidden">
                     {loadingSuggestions && (
                       <div className="px-4 py-2.5 text-xs font-dm text-muted">Searching locations...</div>
@@ -434,29 +455,31 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
                 )}
               </div>
 
-              <button
-                type="button"
-                onClick={handleUseCurrentLocation}
-                disabled={locating}
-                className="px-2 sm:px-3 h-9 border-l border-border-custom text-sm font-dm text-muted hover:text-charcoal transition-colors flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                title="Use my current location"
-              >
-                {locating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <LocateFixed className="w-4 h-4" />
-                )}
-                <span className="hidden xl:inline">Near Me</span>
-              </button>
+              {!aiMode && (
+                <button
+                  type="button"
+                  onClick={handleUseCurrentLocation}
+                  disabled={locating}
+                  className="px-2 sm:px-3 h-9 border-l border-border-custom text-sm font-dm text-muted hover:text-charcoal transition-colors flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  title="Use my current location"
+                >
+                  {locating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <LocateFixed className="w-4 h-4" />
+                  )}
+                  <span className="hidden xl:inline">Near Me</span>
+                </button>
+              )}
               
-              {!isSearchExpanded && (
+              {!isSearchExpanded && !aiMode && (
                 <div className="hidden sm:flex px-3 border-l border-border-custom text-sm font-dm text-muted items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4" />
                   <span className="hidden md:inline">Filters</span>
                 </div>
               )}
 
-              {isSearchExpanded && (
+              {isSearchExpanded && !aiMode && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -467,6 +490,34 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
                   Search
                 </button>
               )}
+              
+              {aiMode && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAiSearch();
+                  }}
+                  disabled={aiLoading}
+                  className="px-3 sm:px-5 py-2 mr-1 bg-[#1A1A1A] text-white text-sm font-semibold rounded-xl hover:bg-charcoal transition-colors shadow-sm flex items-center gap-2"
+                >
+                  {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  Ask AI
+                </button>
+              )}
+              
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAiMode(!aiMode);
+                  if (!isSearchExpanded) setIsSearchExpanded(true);
+                }}
+                className={`ml-1 px-3 h-9 flex items-center gap-2 rounded-xl transition-colors ${aiMode ? "text-[#1A1A1A] bg-sand" : "text-muted hover:text-charcoal hover:bg-cream"}`}
+                title="Toggle AI Search Mode"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span className="hidden sm:inline text-xs font-dm font-semibold uppercase">{aiMode ? "Classic" : "AI Mode"}</span>
+              </button>
             </div>
 
             {/* Expanded Content Panel */}
