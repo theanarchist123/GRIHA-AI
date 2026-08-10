@@ -29,14 +29,14 @@ async def get_activity_feed(
 
     if query_filters:
         raw_query = {"$and": query_filters}
-        total = await ActivityLog.find(raw_query).count()
-        activities = await ActivityLog.find(raw_query).sort(
-            -ActivityLog.created_at
+        total = await ActivityLog.find_many(raw_query).count()
+        activities = await ActivityLog.find_many(raw_query).sort(
+            "-created_at"
         ).skip(skip).limit(limit).to_list()
     else:
-        total = await ActivityLog.find().count()
-        activities = await ActivityLog.find().sort(
-            -ActivityLog.created_at
+        total = await ActivityLog.find_all().count()
+        activities = await ActivityLog.find_all().sort(
+            "-created_at"
         ).skip(skip).limit(limit).to_list()
 
     result = []

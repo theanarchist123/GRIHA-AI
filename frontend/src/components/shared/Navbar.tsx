@@ -189,6 +189,7 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
     parking: false,
   });
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locationStatus, setLocationStatus] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
@@ -358,7 +359,7 @@ export function DashboardTopBar({ filters, onApplyFilters }: DashboardTopBarProp
           ref={searchRef}
           className={cn(
             "relative transition-all duration-300 ease-out z-50 flex-1 sm:flex-none",
-            isSearchExpanded ? "sm:w-[500px] w-full" : "sm:w-[250px] md:w-[300px] w-full"
+            isSearchExpanded ? "sm:w-[600px] lg:w-[700px] w-full" : "sm:w-[350px] md:w-[450px] lg:w-[500px] w-full"
           )}
         >
           <div 
