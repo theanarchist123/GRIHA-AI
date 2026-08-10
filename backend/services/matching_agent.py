@@ -5,7 +5,7 @@ uses Gemini for intelligent matching with preference breakdown.
 """
 import json
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 
 import google.generativeai as genai
@@ -217,7 +217,7 @@ Return ONLY valid JSON. No markdown.
                         ai_insight=s.get("ai_insight", ""),
                         recommended_action=s.get("recommended_action", "review"),
                         status="new",
-                        created_at=datetime.utcnow(),
+                        created_at=datetime.now(timezone.utc),
                     )
                     await match.insert()
                     matches.append(match)

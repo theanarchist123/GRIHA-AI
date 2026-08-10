@@ -1,6 +1,6 @@
 from beanie import Document
 from pydantic import Field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 class LegalCorpus(Document):
@@ -9,7 +9,7 @@ class LegalCorpus(Document):
     section_reference: str
     state: Optional[str] = None
     embedding: List[float] = Field(default_factory=list)
-    ingested_at: datetime = Field(default_factory=datetime.utcnow)
+    ingested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:
         name = "legal_corpus"
@@ -23,7 +23,7 @@ class NeighbourhoodReview(Document):
     city: str
     source_platform: str
     embedding: List[float] = Field(default_factory=list)
-    scraped_at: datetime = Field(default_factory=datetime.utcnow)
+    scraped_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:
         name = "neighbourhood_reviews"

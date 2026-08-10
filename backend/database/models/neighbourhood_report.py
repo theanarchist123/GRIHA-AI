@@ -1,6 +1,6 @@
 from beanie import Document
 from pydantic import Field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Any
 
 class NeighbourhoodReport(Document):
@@ -14,7 +14,7 @@ class NeighbourhoodReport(Document):
     price_trend: List[Dict[str, Any]] = Field(default_factory=list) # 12 months array
     resident_sentiment: Dict[str, Any] = Field(default_factory=dict)
     livability_scores: Dict[str, Any] = Field(default_factory=dict)
-    cached_at: datetime = Field(default_factory=datetime.utcnow)
+    cached_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: datetime
 
     class Settings:

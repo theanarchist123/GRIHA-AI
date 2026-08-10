@@ -36,12 +36,13 @@ async def add_to_pipeline(item: PipelineItemCreate, db = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/")
-async def get_pipeline(user_email: Optional[str] = None, db = Depends(get_db)):
+async def get_pipeline(user_email: Optional[str] = None, skip: int = 0, limit: int = 100, db = Depends(get_db)):
     try:
         pipeline_collection = db["pipeline"]
         query = {"user_email": user_email} if user_email else {}
-        cursor = pipeline_collection.find(query)
-        items = await cursor.to_list(length=100)
+        total = await pipeline_collection.count_documents(query)
+        cursor = pipeline_collection.find(query).skip(skip).limit(limit)
+        items = await cursor.to_list(length=limit)
         
         # Group by status
         result = {
@@ -71,7 +72,7 @@ async def get_pipeline(user_email: Optional[str] = None, db = Depends(get_db)):
                 "aiAction": item.get("aiAction", "")
             })
             
-        return {"status": "success", "data": result}
+        return {"status": "success", "data": result, "total": total, "skip": skip, "limit": limit}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

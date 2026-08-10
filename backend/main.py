@@ -4,10 +4,14 @@ from contextlib import asynccontextmanager
 from database.connection import init_db
 from config import settings
 from api.routes import router as api_router
+from api.dependencies.rate_limiter import limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 import asyncio
 import sys
 from typing import List
 from services.price_monitor import monitor_prices_loop
+from services.visit_monitor import monitor_visits_loop
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
@@ -20,12 +24,14 @@ async def lifespan(app: FastAPI):
     
     # Start background price monitor
     price_monitor_task = asyncio.create_task(monitor_prices_loop())
+    visit_monitor_task = asyncio.create_task(monitor_visits_loop())
     
     yield
     
     # Shutdown actions
     print("Shutting down Griha AI Backend...")
     price_monitor_task.cancel()
+    visit_monitor_task.cancel()
 
 app = FastAPI(
     title="Griha AI API",
@@ -33,6 +39,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 def _build_cors_origins() -> List[str]:

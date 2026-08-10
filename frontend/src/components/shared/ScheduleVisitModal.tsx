@@ -9,16 +9,41 @@ interface ScheduleVisitModalProps {
   onClose: () => void;
   propertyTitle: string;
   propertyAddress: string;
+  propertyId: string;
+  userEmail: string;
 }
 
-export function ScheduleVisitModal({ isOpen, onClose, propertyTitle, propertyAddress }: ScheduleVisitModalProps) {
+export function ScheduleVisitModal({ isOpen, onClose, propertyTitle, propertyAddress, propertyId, userEmail }: ScheduleVisitModalProps) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleDownloadIcs = () => {
+  const handleDownloadIcs = async () => {
     if (!date || !time) {
       alert("Please select a date and time.");
       return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
+      await fetch(`${apiUrl}/api/visits/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          property_id: propertyId,
+          user_email: userEmail,
+          date: `${date}T00:00:00Z`,
+          time_slot: time,
+          notes: "",
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to save visit to backend", err);
+    } finally {
+      setIsSubmitting(false);
     }
 
     const startDateTime = new Date(`${date}T${time}`);
@@ -115,11 +140,11 @@ END:VCALENDAR`;
 
               <button 
                 onClick={handleDownloadIcs}
-                disabled={!date || !time}
+                disabled={!date || !time || isSubmitting}
                 className="w-full py-3 bg-forest text-cream font-dm font-bold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                <CalendarPlus className="w-4 h-4" />
-                Add to Calendar
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarPlus className="w-4 h-4" />}
+                {isSubmitting ? "Scheduling..." : "Schedule & Add to Calendar"}
               </button>
             </div>
           </motion.div>

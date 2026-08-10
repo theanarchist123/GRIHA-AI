@@ -1,7 +1,7 @@
 """
 Negotiation API Routes — Real Gemini-powered multi-turn negotiation.
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from bson import ObjectId
@@ -9,6 +9,7 @@ from database.models.property import Property
 from database.models.negotiation import Negotiation
 from database.models.user import User
 from services.negotiation_agent import NegotiationAgent
+from api.dependencies.rate_limiter import limiter
 
 router = APIRouter(prefix="/api/negotiation", tags=["Negotiation"])
 negotiation_agent = NegotiationAgent()
@@ -32,7 +33,8 @@ class SettingsUpdateRequest(BaseModel):
 
 
 @router.post("/start")
-async def start_negotiation(req: NegotiationStartRequest):
+@limiter.limit("5/minute")
+async def start_negotiation(request: Request, req: NegotiationStartRequest):
     """Start a new negotiation for a property."""
     if not ObjectId.is_valid(req.property_id):
         raise HTTPException(400, "Invalid property ID")

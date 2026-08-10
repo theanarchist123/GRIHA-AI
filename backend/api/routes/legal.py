@@ -1,13 +1,16 @@
 """
 Legal API Routes — Real Gemini-powered legal analysis.
 """
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Request
 from pydantic import BaseModel
 from typing import Optional
 from bson import ObjectId
+from fastapi.responses import StreamingResponse
 from database.models.property import Property
 from database.models.legal_report import LegalReport
 from services.legal_agent import LegalAgent
+from services.pdf_generator import PDFGenerator
+from api.dependencies.rate_limiter import limiter
 
 router = APIRouter(prefix="/api/legal", tags=["Legal"])
 legal_agent = LegalAgent()
@@ -19,7 +22,8 @@ class LegalAnalyzeRequest(BaseModel):
 
 
 @router.post("/analyze")
-async def analyze_property_legal(req: LegalAnalyzeRequest, background_tasks: BackgroundTasks):
+@limiter.limit("5/minute")
+async def analyze_property_legal(request: Request, req: LegalAnalyzeRequest, background_tasks: BackgroundTasks):
     """Trigger legal analysis for a property. Returns immediately, runs in background."""
     if not ObjectId.is_valid(req.property_id):
         raise HTTPException(400, "Invalid property ID")
@@ -97,3 +101,25 @@ async def get_legal_report(property_id: str):
             },
         },
     }
+
+@router.get("/report/{property_id}/pdf")
+async def get_legal_report_pdf(property_id: str):
+    """Download the legal report as a PDF."""
+    if not ObjectId.is_valid(property_id):
+        raise HTTPException(400, "Invalid property ID")
+
+    prop = await Property.get(ObjectId(property_id))
+    if not prop:
+        raise HTTPException(404, "Property not found")
+
+    report = await LegalReport.find_one(LegalReport.property == prop.id)
+    if not report:
+        raise HTTPException(404, "Report not found")
+
+    pdf_buffer = PDFGenerator.generate_legal_report_pdf(report, prop.title)
+    
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=Legal_Report_{property_id}.pdf"}
+    )

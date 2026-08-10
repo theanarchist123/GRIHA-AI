@@ -6,7 +6,7 @@ and deal closure. Supports Twilio WhatsApp integration.
 import json
 import math
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 
 import google.generativeai as genai
@@ -303,7 +303,7 @@ Write a natural response (2-4 sentences). Reference the broker's last message. S
         opening_message = Message(
             role="agent",
             content=opening_msg,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             approved_by_user=False,
         )
 
@@ -325,7 +325,7 @@ Write a natural response (2-4 sentences). Reference the broker's last message. S
                 "analysis_history": [],
             },
             turn_count=1,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
         await negotiation.insert()
 
@@ -389,7 +389,7 @@ Write a natural response (2-4 sentences). Reference the broker's last message. S
         broker_msg = Message(
             role="broker",
             content=broker_message,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
         )
         neg.messages.append(broker_msg)
         neg.turn_count += 1
@@ -434,7 +434,7 @@ Write a natural response (2-4 sentences). Reference the broker's last message. S
             escalate_msg = Message(
                 role="agent",
                 content=f"[System] Negotiation requires your input. The broker's latest position and our analysis suggest the following options are available. Please review and decide.",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
             neg.messages.append(escalate_msg)
             neg.status = "paused"
@@ -444,7 +444,7 @@ Write a natural response (2-4 sentences). Reference the broker's last message. S
             agent_msg = Message(
                 role="agent",
                 content=message_to_send,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
             )
             neg.messages.append(agent_msg)
             result["agent_message"] = message_to_send

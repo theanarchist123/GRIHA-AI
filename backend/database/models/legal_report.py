@@ -1,6 +1,6 @@
 from beanie import Document, Link
 from pydantic import Field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 from database.models.property import Property
 
@@ -12,7 +12,7 @@ class LegalReport(Document):
     builder_track_record: Dict[str, Any] = Field(default_factory=dict, description="status, details")
     overall_risk: str = Field(default="clean", description="clean, caution, high_risk")
     plain_english_summary: Optional[str] = None
-    generated_at: datetime = Field(default_factory=datetime.utcnow)
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:
         name = "legal_reports"

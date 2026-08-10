@@ -1,6 +1,6 @@
 from beanie import Document, Link
 from pydantic import Field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from database.models.user import User
 from database.models.property import Property
@@ -20,7 +20,7 @@ class DocumentModel(Document):
     # Optional embedding for user-specific RAG over documents
     embedding: Optional[List[float]] = None
     
-    uploaded_at: datetime = Field(default_factory=datetime.utcnow)
+    uploaded_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:
         name = "documents"

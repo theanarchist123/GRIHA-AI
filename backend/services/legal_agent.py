@@ -5,7 +5,7 @@ and builder track record research using Gemini AI.
 """
 import json
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 
 import google.generativeai as genai
@@ -54,7 +54,7 @@ class LegalAgent:
             builder_track_record=parsed.get("builder_track_record", {}),
             overall_risk=overall_risk,
             plain_english_summary=summary,
-            generated_at=datetime.utcnow(),
+            generated_at=datetime.now(timezone.utc),
         )
         await report.insert()
 

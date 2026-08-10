@@ -1,7 +1,7 @@
 """
 Unified activity logger — all agents write here.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from database.models.activity_log import ActivityLog
 
@@ -24,7 +24,7 @@ async def log_activity(
         property_id=property_id,
         action_label=action_label,
         action_href=action_href,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     await entry.insert()
     return entry

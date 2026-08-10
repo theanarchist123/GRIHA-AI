@@ -6,7 +6,7 @@ Uses OpenStreetMap/Nominatim (free) instead of Google Maps.
 """
 import json
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any, List
 
 import httpx
@@ -35,7 +35,7 @@ class NeighbourhoodAgent:
         if format_json:
             payload["format"] = "json"
             
-        async with httpx.AsyncClient(verify=False) as client:
+        async with httpx.AsyncClient(verify=True) as client:
             resp = await client.post(
                 "https://ollama.com/api/chat",
                 json=payload,
@@ -56,7 +56,7 @@ class NeighbourhoodAgent:
     ) -> NeighbourhoodReport:
         """Fetch cached report or generate a new one."""
         # Check cache first
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         cached = await NeighbourhoodReport.find_one(
             NeighbourhoodReport.locality == locality,
             NeighbourhoodReport.city == city,
@@ -218,7 +218,7 @@ Return ONLY valid JSON for {locality}, {city}. Use REAL place names. Be specific
         overall = round(sum(sub_scores) / max(len(sub_scores), 1), 1)
 
         # Build and save report
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         report = NeighbourhoodReport(
             locality=locality,
             city=city,

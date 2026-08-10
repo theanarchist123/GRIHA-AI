@@ -144,10 +144,22 @@ export default function LegalReportPage() {
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm font-dm">Back to Property</span>
           </Link>
-          <Link href="/" className="flex items-center gap-1">
-            <span className="font-playfair italic text-lg text-charcoal">griha</span>
-            <span className="font-playfair text-lg text-warm-gold font-bold">AI</span>
-          </Link>
+          <div className="flex items-center gap-6">
+            <a 
+              href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/legal/report/${propertyId}/pdf`}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-charcoal text-cream px-4 py-1.5 rounded-full text-sm font-dm hover:bg-forest transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Download PDF
+            </a>
+            <Link href="/" className="flex items-center gap-1">
+              <span className="font-playfair italic text-lg text-charcoal">griha</span>
+              <span className="font-playfair text-lg text-warm-gold font-bold">AI</span>
+            </Link>
+          </div>
         </div>
       </div>
 

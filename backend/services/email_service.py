@@ -69,3 +69,55 @@ class EmailService:
         except Exception as e:
             print(f"❌ Failed to send email alert: {str(e)}")
             return False
+
+    def send_visit_reminder(self, recipient_email: str, property_title: str, date: str, time_slot: str, property_url: str):
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = f"📅 Visit Reminder: {property_title} Tomorrow"
+            msg["From"] = f"Griha AI <{self.sender_email}>"
+            msg["To"] = recipient_email
+
+            html = f"""
+            <html>
+              <body style="font-family: Arial, sans-serif; color: #1C1C1C; background-color: #FAF8F3; padding: 20px;">
+                <div style="max-w: 600px; margin: 0 auto; background-color: #FFFFFF; border: 1px solid #E5E0D8; border-radius: 10px; overflow: hidden;">
+                  <div style="background-color: #2D5016; padding: 20px; text-align: center;">
+                    <h1 style="color: #FFFFFF; margin: 0;">Griha AI Visit Reminder</h1>
+                  </div>
+                  <div style="padding: 30px;">
+                    <h2 style="color: #2D5016;">Your visit is coming up!</h2>
+                    <p>You have a property tour scheduled for <strong>{property_title}</strong> tomorrow.</p>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;">
+                      <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #E5E0D8;"><strong>Date:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #E5E0D8; text-align: right;">{date}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px;"><strong>Time:</strong></td>
+                        <td style="padding: 10px; text-align: right; color: #C9922A; font-weight: bold;">{time_slot}</td>
+                      </tr>
+                    </table>
+                    <p style="text-align: center; margin-top: 30px;">
+                      <a href="{property_url}" style="background-color: #2D5016; color: #FFFFFF; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Property</a>
+                    </p>
+                  </div>
+                </div>
+              </body>
+            </html>
+            """
+            
+            part = MIMEText(html, "html")
+            msg.attach(part)
+
+            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
+            server.starttls()
+            server.login(self.sender_email, self.sender_password)
+            server.sendmail(self.sender_email, recipient_email, msg.as_string())
+            server.quit()
+            
+            print(f"✅ Visit reminder email sent to {recipient_email}")
+            return True
+        except Exception as e:
+            print(f"❌ Failed to send visit reminder: {str(e)}")
+            return False
+

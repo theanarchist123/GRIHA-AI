@@ -1,11 +1,14 @@
 import asyncio
 from database.mongo import db
 from database.models.property import Property
-from services.email_service import EmailService
 import re
 from bson import ObjectId
+from config import settings
+from services.email_service import EmailService
+from services.whatsapp_service import WhatsAppService
 
 email_service = EmailService()
+whatsapp_service = WhatsAppService()
 
 def parse_price(price_str: str) -> float:
     match = re.search(r'([\d.]+)', str(price_str))
@@ -49,7 +52,7 @@ async def monitor_prices_loop():
                         print(f"🚨 DROP DETECTED for {live_prop.title}! Current: {current_live_val}, Target: {target_val}")
                         
                         # Send Email
-                        property_url = f"http://localhost:3000/property/{property_id}"
+                        property_url = f"{settings.frontend_url}/property/{property_id}"
                         success = email_service.send_price_drop_alert(
                             recipient_email=user_email,
                             property_title=live_prop.title,
@@ -58,6 +61,17 @@ async def monitor_prices_loop():
                             target_price=target_val,
                             property_url=property_url
                         )
+                        
+                        # Send WhatsApp if configured
+                        whatsapp_number = alert.get("whatsapp_number")
+                        if whatsapp_number:
+                            whatsapp_service.send_price_drop_alert(
+                                to_number=whatsapp_number,
+                                property_title=live_prop.title,
+                                original_price=alert.get("original_price_float", 0),
+                                new_price=current_live_val,
+                                property_url=property_url
+                            )
                         
                         if success:
                             # Update alert to triggered

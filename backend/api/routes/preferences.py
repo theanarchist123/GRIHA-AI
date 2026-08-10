@@ -71,7 +71,7 @@ async def update_preferences(clerk_id: str, req: PreferencesUpdateRequest):
         raise HTTPException(404, "No active search profile found")
 
     # Update fields
-    from datetime import datetime
+    from datetime import datetime, timezone
 
     if req.locations is not None:
         profile.localities = req.locations
@@ -88,7 +88,7 @@ async def update_preferences(clerk_id: str, req: PreferencesUpdateRequest):
     if req.commute_destination is not None:
         profile.commute_destination = req.commute_destination
 
-    profile.updated_at = datetime.utcnow()
+    profile.updated_at = datetime.now(timezone.utc)
     await profile.save()
 
     return {

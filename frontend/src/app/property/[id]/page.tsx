@@ -22,6 +22,8 @@ import { formatPrice } from "@/lib/utils";
 import { AffordabilityCalc } from "@/components/shared/AffordabilityCalc";
 import { MoveInCostBreakdown } from "@/components/shared/MoveInCostBreakdown";
 import { ScheduleVisitModal } from "@/components/shared/ScheduleVisitModal";
+import { SimilarProperties } from "@/components/shared/SimilarProperties";
+import { InvestmentROI } from "@/components/shared/InvestmentROI";
 import { CommuteCalc } from "@/components/shared/CommuteCalc";
 import { SocietyReviews } from "@/components/shared/SocietyReviews";
 import { STATIC_IMAGES } from "@/lib/unsplash";
@@ -383,6 +385,7 @@ export default function PropertyDetailPage() {
           </motion.section>
 
           <AffordabilityCalc rentAmount={property.price} city={property.city} />
+          <InvestmentROI propertyId={property.id} />
           <MoveInCostBreakdown propertyId={property.id} />
           <CommuteCalc 
             propertyAddress={property.address || property.locality} 
@@ -543,6 +546,8 @@ export default function PropertyDetailPage() {
             </div>
           </div>
         </div>
+        
+        <SimilarProperties propertyId={propertyId as string} />
       </div>
 
       <ScheduleVisitModal 
@@ -550,6 +555,8 @@ export default function PropertyDetailPage() {
         onClose={() => setIsScheduleModalOpen(false)}
         propertyTitle={heading}
         propertyAddress={`${property.address}, ${property.city}`}
+        propertyId={propertyId as string}
+        userEmail={userEmail || "guest@example.com"}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 from beanie import Document, Link
 from pydantic import Field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from database.models.user import User
 
@@ -17,7 +17,7 @@ class SearchProfile(Document):
     commute_destination: Optional[str] = None
     commute_time: Optional[int] = None
     active: bool = Field(default=True)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:
         name = "search_profiles"

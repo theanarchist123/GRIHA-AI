@@ -17,6 +17,7 @@ type AlertItem = {
   alertTarget: string;
   saveAmount: string;
   status: string;
+  target_percentage: number;
 };
 
 export default function PriceDropAlertsPage() {
@@ -68,6 +69,20 @@ export default function PriceDropAlertsPage() {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/alerts/${property_id}?user_email=${encodeURIComponent(userEmail)}`, {
         method: "DELETE"
+      });
+      fetchAlerts();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateTarget = async (alert_id: string, newTarget: number) => {
+    if (!userEmail) return;
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/alerts/${alert_id}?user_email=${encodeURIComponent(userEmail)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target_percentage: newTarget })
       });
       fetchAlerts();
     } catch (err) {
@@ -181,7 +196,19 @@ export default function PriceDropAlertsPage() {
                         {/* Alert Target */}
                         <div className="flex-1 min-w-[100px]">
                           <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Alert Target</p>
-                          <p className="font-bold text-warm-gold text-sm">{alert.alertTarget}</p>
+                          <div className="flex items-center gap-1">
+                            <p className="font-bold text-warm-gold text-sm">{alert.alertTarget}</p>
+                            <select 
+                              value={alert.target_percentage}
+                              onChange={(e) => handleUpdateTarget(alert.id, Number(e.target.value))}
+                              className="text-xs bg-transparent border-none text-muted cursor-pointer hover:text-charcoal focus:ring-0 p-0"
+                            >
+                              <option value={5}>5%</option>
+                              <option value={10}>10%</option>
+                              <option value={15}>15%</option>
+                              <option value={20}>20%</option>
+                            </select>
+                          </div>
                         </div>
                         
                         {/* Save */}

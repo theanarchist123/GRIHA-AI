@@ -1,12 +1,12 @@
 from beanie import Document
 from pydantic import Field, BaseModel
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 class AutopilotMatch(BaseModel):
     property_id: str
     match_score: float
-    found_at: datetime = Field(default_factory=datetime.utcnow)
+    found_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     legal_checked: bool = False
     legal_status: Optional[str] = None
     broker_called: bool = False

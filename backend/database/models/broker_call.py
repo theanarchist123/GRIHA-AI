@@ -3,7 +3,7 @@ BrokerCall — tracks outbound AI voice calls to property brokers.
 """
 from beanie import Document
 from pydantic import Field, BaseModel
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 
@@ -31,7 +31,7 @@ class BrokerCall(Document):
     extracted_info: Optional[dict] = None  # actual_rent, deposit, available_from, broker_name, flexibility, etc.
 
     # Timestamps
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     started_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
 

@@ -22,6 +22,7 @@ import {
   Loader2,
   Menu,
   X,
+  Calendar,
 } from "lucide-react";
 
 // Context so pages can control sidebar open state
@@ -55,10 +56,13 @@ const NAV_ITEMS = [
   { label: "My Matches", href: "/dashboard", icon: Home, badge: 8 },
   { label: "Pipeline", href: "/pipeline", icon: BarChart3 },
   { label: "Price Drop Alerts", href: "/price-drop-alerts", icon: Bell },
+  { label: "Scheduled Visits", href: "/visits", icon: Calendar },
   { label: "Legal Checks", href: "/legal/prop-1", icon: Scale },
   { label: "Negotiations", href: "/negotiate/prop-1", icon: MessageSquare },
+  { label: "Market Insights", href: "/market", icon: MapPin },
   { label: "Documents", href: "/documents", icon: FileText },
   { label: "Neighbourhood", href: "/neighbourhood", icon: MapPin },
+  { label: "Activity Feed", href: "/activity", icon: Activity },
   { label: "Preferences", href: "/preferences", icon: Settings },
 ];
 

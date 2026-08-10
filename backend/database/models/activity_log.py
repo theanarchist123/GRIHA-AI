@@ -1,6 +1,6 @@
 from beanie import Document, Link
 from pydantic import Field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from database.models.user import User
 
@@ -13,7 +13,7 @@ class ActivityLog(Document):
     property_id: Optional[str] = None
     action_label: Optional[str] = None
     action_href: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:
         name = "activity_logs"

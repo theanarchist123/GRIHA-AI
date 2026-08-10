@@ -1,6 +1,6 @@
 import asyncio
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import google.generativeai as genai
@@ -166,7 +166,7 @@ class GeminiPropertyContentService:
 			"ai_negotiation_tips": negotiation_tips,
 			"ai_highlights": highlights,
 			"ai_watchouts": watchouts,
-			"ai_last_generated_at": datetime.utcnow(),
+			"ai_last_generated_at": datetime.now(timezone.utc),
 		}
 
 	async def generate_content(self, prop: Property) -> dict[str, Any]:
@@ -233,10 +233,30 @@ class GeminiPropertyContentService:
 
 		return self._coerce_payload(llm_payload, fallback)
 
+	async def generate_embedding(self, prop: Property) -> list[float] | None:
+		if not self._enabled:
+			return None
+		try:
+			text = f"{prop.title or ''} {prop.locality or ''} {prop.city or ''} {prop.price} {prop.bhk or ''} {prop.furnished_status or ''} {prop.description or ''}"
+			result = await genai.embed_content_async(
+				model="models/text-embedding-004",
+				content=text,
+				task_type="retrieval_document"
+			)
+			return result['embedding']
+		except Exception as e:
+			print(f"Error generating embedding: {e}")
+			return None
+
 	async def enrich_property(self, prop: Property) -> Property:
 		content = await self.generate_content(prop)
 		for key, value in content.items():
 			setattr(prop, key, value)
+			
+		embedding = await self.generate_embedding(prop)
+		if embedding:
+			prop.embedding = embedding
+			
 		await prop.save()
 		return prop
 

@@ -104,19 +104,20 @@ async def upload_document(
 
 
 @router.get("/")
-async def list_documents(
-    clerk_id: Optional[str] = Query(default=None),
-):
+async def list_documents(clerk_id: Optional[str] = None, skip: int = 0, limit: int = 100):
     """List all documents for a user."""
+    total = 0
     if clerk_id:
         user = await User.find_one(User.clerk_id == clerk_id)
         if user:
-            docs = await DocumentModel.find(DocumentModel.user == user.id).to_list(length=100)
+            total = await DocumentModel.find(DocumentModel.user == user.id).count()
+            docs = await DocumentModel.find(DocumentModel.user == user.id).skip(skip).limit(limit).to_list()
         else:
             docs = []
     else:
         # Return all documents if no user filter (for demo)
-        docs = await DocumentModel.find().to_list(length=100)
+        total = await DocumentModel.find().count()
+        docs = await DocumentModel.find().skip(skip).limit(limit).to_list()
 
     result = []
     for doc in docs:
@@ -137,7 +138,7 @@ async def list_documents(
             "url": doc.cloudinary_url,
         })
 
-    return {"status": "success", "data": result}
+    return {"status": "success", "data": result, "total": total, "skip": skip, "limit": limit}
 
 
 @router.get("/{document_id}")

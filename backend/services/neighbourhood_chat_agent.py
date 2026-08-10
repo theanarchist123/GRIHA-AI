@@ -30,7 +30,7 @@ class NeighbourhoodChatAgent:
         if format_json:
             payload["format"] = "json"
             
-        async with httpx.AsyncClient(verify=False) as client:
+        async with httpx.AsyncClient(verify=True) as client:
             resp = await client.post(
                 "https://ollama.com/api/chat",
                 json=payload,
@@ -53,7 +53,7 @@ class NeighbourhoodChatAgent:
         }
         headers = {"User-Agent": "GrihaAI/1.0"}
         try:
-            async with httpx.AsyncClient(verify=False) as client:
+            async with httpx.AsyncClient(verify=True) as client:
                 resp = await client.get(url, params=params, headers=headers, timeout=10.0)
                 resp.raise_for_status()
                 data = resp.json()
@@ -68,7 +68,7 @@ class NeighbourhoodChatAgent:
             simpler_address = f"{parts[-2]}, {parts[-1]}"
             params["q"] = simpler_address
             try:
-                async with httpx.AsyncClient(verify=False) as client:
+                async with httpx.AsyncClient(verify=True) as client:
                     resp = await client.get(url, params=params, headers=headers, timeout=10.0)
                     resp.raise_for_status()
                     data = resp.json()
@@ -121,7 +121,7 @@ Return ONLY the JSON array, no markdown, no explanation.
         west, east = lng - offset, lng + offset
 
         all_results = []
-        async with httpx.AsyncClient(verify=False) as client:
+        async with httpx.AsyncClient(verify=True) as client:
             for term in search_terms:
                 try:
                     resp = await client.get(

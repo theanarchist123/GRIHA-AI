@@ -22,6 +22,7 @@ import {
   Bell,
   CheckCircle,
   ArrowRight,
+  Calendar,
 } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
@@ -127,6 +128,7 @@ export default function DashboardPage() {
   const [topMatches, setTopMatches] = useState<Property[]>([]);
   const [pipelineData, setPipelineData] = useState<any>(null);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [upcomingVisits, setUpcomingVisits] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchProgress, setSearchProgress] = useState(0);
   const [searchNotice, setSearchNotice] = useState<string>("");
@@ -395,6 +397,19 @@ export default function DashboardPage() {
             } else {
               setRecentActivity([]);
             }
+
+            // Fetch upcoming visits
+            try {
+              const visitRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000'}/api/visits/?user_email=${encodeURIComponent(userEmail)}`);
+              if (visitRes.ok) {
+                const visitJson = await visitRes.json();
+                if (visitJson.data) {
+                  setUpcomingVisits(visitJson.data.filter((v: any) => v.status === "scheduled").length);
+                }
+              }
+            } catch (e) {
+              console.error("Failed to fetch visits:", e);
+            }
           } catch (e) {
             console.error("Failed to fetch dashboard user data:", e);
             setPipelineData({ shortlisted: [], underReview: [], negotiating: [], offerMade: [] });
@@ -604,7 +619,7 @@ export default function DashboardPage() {
           <section id="pipeline">
             <h2 className="font-playfair text-2xl text-charcoal mb-4">Quick Glance</h2>
             {!loading && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                 <div className="bg-surface rounded-xl border border-border-custom p-6 flex flex-col items-center justify-center text-center">
                   <div className="w-12 h-12 bg-forest/10 rounded-full flex items-center justify-center mb-4">
                     <CheckCircle className="w-6 h-6 text-forest" />
@@ -626,6 +641,13 @@ export default function DashboardPage() {
                   <h3 className="font-dm font-bold text-3xl text-charcoal mb-1">{savedAlertIds.size}</h3>
                   <p className="font-dm text-muted text-sm">Price Alerts Subscribed</p>
                 </div>
+                <Link href="/visits" className="bg-surface rounded-xl border border-border-custom p-6 flex flex-col items-center justify-center text-center hover:bg-cream transition-colors block">
+                  <div className="w-12 h-12 bg-forest/10 rounded-full flex items-center justify-center mb-4">
+                    <Calendar className="w-6 h-6 text-forest" />
+                  </div>
+                  <h3 className="font-dm font-bold text-3xl text-charcoal mb-1">{upcomingVisits}</h3>
+                  <p className="font-dm text-muted text-sm">Upcoming Visits</p>
+                </Link>
               </div>
             )}
           </section>

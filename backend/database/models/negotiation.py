@@ -1,6 +1,6 @@
 from beanie import Document, Link
 from pydantic import Field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Optional, Any
 from database.models.user import User
 from database.models.property import Property
@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 class Message(BaseModel):
     role: str = Field(..., description="'agent' or 'broker' or 'user'")
     content: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     approved_by_user: bool = False
 
 class Negotiation(Document):
@@ -26,7 +26,7 @@ class Negotiation(Document):
     market_fair_value_max: Optional[int] = None
     langgraph_state: Optional[Dict[str, Any]] = None # JSON object for resuming graph
     turn_count: int = 0
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:
         name = "negotiations"

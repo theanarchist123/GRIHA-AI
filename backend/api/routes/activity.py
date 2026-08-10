@@ -13,6 +13,7 @@ async def get_activity_feed(
     clerk_id: Optional[str] = Query(default=None),
     type_filter: Optional[str] = Query(default=None),
     limit: int = Query(default=30, le=100),
+    skip: int = Query(default=0),
 ):
     """Fetch the activity feed, optionally filtered by user and type."""
     query_filters = []
@@ -29,13 +30,17 @@ async def get_activity_feed(
     if query_filters:
         from motor.motor_asyncio import AsyncIOMotorClient
         # Use Beanie's find with raw filter
+        total = await ActivityLog.find(
+            *[ActivityLog.type == type_filter] if type_filter and type_filter != "all" else []
+        ).count()
         activities = await ActivityLog.find(
             *[ActivityLog.type == type_filter] if type_filter and type_filter != "all" else []
-        ).sort(-ActivityLog.created_at).to_list(length=limit)
+        ).sort(-ActivityLog.created_at).skip(skip).limit(limit).to_list()
     else:
+        total = await ActivityLog.find().count()
         activities = await ActivityLog.find().sort(
             -ActivityLog.created_at
-        ).to_list(length=limit)
+        ).skip(skip).limit(limit).to_list()
 
     result = []
     for act in activities:
@@ -51,16 +56,16 @@ async def get_activity_feed(
             "created_at": act.created_at.isoformat() if act.created_at else None,
         })
 
-    return {"status": "success", "data": result}
+    return {"status": "success", "data": result, "total": total, "skip": skip, "limit": limit}
 
 
 def _relative_time(dt) -> str:
     """Convert datetime to relative time string."""
-    from datetime import datetime
+    from datetime import datetime, timezone
     if not dt:
         return "Just now"
     
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     diff = now - dt
     seconds = diff.total_seconds()
 

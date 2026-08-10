@@ -62,6 +62,8 @@ async def list_properties(
     bhk: Optional[str] = None,
     min_price: Optional[int] = None,
     max_price: Optional[int] = None,
+    skip: int = 0,
+    limit: int = 20,
 ):
     query = {}
     location_clause = _build_location_clause(location)
@@ -83,10 +85,11 @@ async def list_properties(
         conditions.append(query)
 
     final_query = {"$and": conditions} if len(conditions) > 1 else conditions[0]
-    properties = await Property.find(final_query).sort("-created_at").to_list()
+    total = await Property.find(final_query).count()
+    properties = await Property.find(final_query).sort("-created_at").skip(skip).limit(limit).to_list()
     # Run enrichment in the background so we don't block the API response
     asyncio.create_task(_enrich_missing_card_content(properties))
-    return {"status": "success", "data": properties}
+    return {"status": "success", "data": properties, "total": total, "skip": skip, "limit": limit}
 
 @router.get("/search")
 async def search_properties(
@@ -95,6 +98,12 @@ async def search_properties(
     gated: bool = False,
     pet: bool = False,
     parking: bool = False,
+    sort_by: str = "newest",
+    furnishing: Optional[str] = None,
+    min_sqft: Optional[int] = None,
+    max_sqft: Optional[int] = None,
+    skip: int = 0,
+    limit: int = 20,
 ):
     conditions = _real_listings_guard()
     location_clause = _build_location_clause(location)
@@ -112,6 +121,16 @@ async def search_properties(
         conditions.append({"amenities": {"$elemMatch": {"$regex": "pet", "$options": "i"}}})
     if parking:
         conditions.append({"amenities": {"$elemMatch": {"$regex": "parking", "$options": "i"}}})
+    if furnishing:
+        conditions.append({"furnished_status": {"$regex": furnishing, "$options": "i"}})
+    if min_sqft is not None or max_sqft is not None:
+        sqft_query = {}
+        if min_sqft is not None:
+            sqft_query["$gte"] = min_sqft
+        if max_sqft is not None and max_sqft > 0:
+            sqft_query["$lte"] = max_sqft
+        if sqft_query:
+            conditions.append({"size_sqft": sqft_query})
 
     query = {}
     if len(conditions) == 1:
@@ -119,31 +138,40 @@ async def search_properties(
     elif len(conditions) > 1:
         query = {"$and": conditions}
 
-    search_query = Property.find(query).sort("-created_at")
+    sort_mapping = {
+        "newest": "-created_at",
+        "price_asc": "+price",
+        "price_desc": "-price"
+    }
+    sort_expr = sort_mapping.get(sort_by, "-created_at")
+
+    total = await Property.find(query).count()
+    search_query = Property.find(query).sort(sort_expr).skip(skip).limit(limit)
 
     results = await search_query.to_list()
 
     fallback_applied = False
     # If no exact BHK inventory exists for the location, gracefully fallback
     # to location-level results so users still see available listings.
-    if requested_bhk and not results:
+    if requested_bhk and not results and skip == 0:
         fallback_query = {}
         if len(base_conditions) == 1:
             fallback_query = base_conditions[0]
         elif len(base_conditions) > 1:
             fallback_query = {"$and": base_conditions}
 
-        results = await Property.find(fallback_query).sort("-created_at").to_list()
+        total = await Property.find(fallback_query).count()
+        results = await Property.find(fallback_query).sort(sort_expr).skip(skip).limit(limit).to_list()
         fallback_applied = True
 
     asyncio.create_task(_enrich_missing_card_content(results))
     return {
         "status": "success",
-        "results": results,
-        "meta": {
-            "requested_bhk": requested_bhk,
-            "fallback_applied": fallback_applied,
-        },
+        "data": results,
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "fallback_applied": fallback_applied
     }
 
 @router.get("/{property_id}")
@@ -202,6 +230,43 @@ async def get_move_in_cost(property_id: str):
         }
     }
 
+@router.get("/{property_id}/investment")
+async def get_investment_analytics(property_id: str):
+    if not ObjectId.is_valid(property_id):
+        raise HTTPException(status_code=400, detail="Invalid ID format")
+    
+    prop = await Property.get(ObjectId(property_id))
+    if not prop:
+        raise HTTPException(status_code=404, detail="Property not found")
+        
+    rent = prop.price or 0
+    # Estimate property value assuming 3% yield (typical for India residential)
+    estimated_value = rent * 12 / 0.03 if rent else 0
+    
+    years = [1, 2, 3, 4, 5]
+    appreciation_rate = 0.06 # 6% capital appreciation
+    rent_increase_rate = 0.05 # 5% rental increase
+    
+    projected_values = [estimated_value * ((1 + appreciation_rate) ** y) for y in years]
+    projected_rents = [rent * 12 * ((1 + rent_increase_rate) ** y) for y in years]
+    
+    return {
+        "status": "success",
+        "data": {
+            "estimated_value": estimated_value,
+            "rental_yield": 3.0,
+            "annual_appreciation": appreciation_rate * 100,
+            "projections": [
+                {
+                    "year": f"Year {y}",
+                    "property_value": round(val),
+                    "annual_rent": round(rnt)
+                }
+                for y, val, rnt in zip(years, projected_values, projected_rents)
+            ]
+        }
+    }
+
 from services.neighbourhood_chat_agent import NeighbourhoodChatAgent
 chat_agent = NeighbourhoodChatAgent()
 
@@ -210,7 +275,7 @@ import httpx
 @router.get("/commute/calculate")
 async def calculate_commute(origin: str, destination: str):
     """Calculate commute using robust geocoding and OSRM for routing."""
-    async with httpx.AsyncClient(verify=False) as client:
+    async with httpx.AsyncClient(verify=True) as client:
         # Geocode origin using our robust agent
         try:
             orig_lat, orig_lon = await chat_agent.geocode_address(origin)
@@ -260,6 +325,56 @@ async def calculate_commute(origin: str, destination: str):
             return {"status": "error", "message": "Error calculating commute"}
 
 import random
+
+@router.get("/{property_id}/similar")
+async def get_similar_properties(property_id: str, limit: int = 3):
+    if not ObjectId.is_valid(property_id):
+        raise HTTPException(status_code=400, detail="Invalid ID format")
+    
+    prop = await Property.get(ObjectId(property_id))
+    if not prop:
+        raise HTTPException(status_code=404, detail="Property not found")
+
+    similar_props = []
+    if prop.embedding:
+        try:
+            # Try Vector Search
+            pipeline = [
+                {
+                    "$vectorSearch": {
+                        "index": "vector_index",
+                        "path": "embedding",
+                        "queryVector": prop.embedding,
+                        "numCandidates": 100,
+                        "limit": limit + 1
+                    }
+                },
+                {
+                    "$match": {
+                        "_id": {"$ne": prop.id},
+                        "is_fake": {"$ne": True}
+                    }
+                },
+                {"$limit": limit}
+            ]
+            similar_props_docs = await Property.aggregate(pipeline).to_list()
+            similar_props = [Property(**doc) for doc in similar_props_docs]
+        except Exception as e:
+            print(f"Vector search failed: {e}")
+            
+    # Fallback if vector search failed or no embedding
+    if not similar_props:
+        price_min = prop.price * 0.7
+        price_max = prop.price * 1.3
+        query = {
+            "_id": {"$ne": prop.id},
+            "is_fake": {"$ne": True},
+            "locality": prop.locality,
+            "price": {"$gte": price_min, "$lte": price_max}
+        }
+        similar_props = await Property.find(query).limit(limit).to_list()
+
+    return {"status": "success", "data": similar_props}
 
 @router.get("/{property_id}/reviews")
 async def get_property_reviews(property_id: str):
