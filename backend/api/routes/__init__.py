@@ -16,6 +16,7 @@ router.include_router(activity.router)
 router.include_router(pipeline.router)
 router.include_router(alerts.router)
 router.include_router(visits.router)
+router.include_router(market.router)
 router.include_router(autopilot.router)
 router.include_router(notifications.router)
 # We will export the combined router to main.py

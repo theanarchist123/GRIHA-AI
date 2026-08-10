@@ -29,7 +29,7 @@ export function ScheduleVisitModal({ isOpen, onClose, propertyTitle, propertyAdd
     setIsSubmitting(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
-      await fetch(`${apiUrl}/api/visits/`, {
+      const response = await fetch(`${apiUrl}/api/visits/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -46,8 +46,15 @@ export function ScheduleVisitModal({ isOpen, onClose, propertyTitle, propertyAdd
           notes: "",
         }),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to schedule visit. Server returned an error.");
+      }
     } catch (err) {
       console.error("Failed to save visit to backend", err);
+      alert("Failed to schedule visit with the server. Please try again later.");
+      setIsSubmitting(false);
+      return; // Do not close modal or download ICS if it failed
     } finally {
       setIsSubmitting(false);
     }
